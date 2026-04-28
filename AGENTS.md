@@ -10,17 +10,28 @@ Move quickly, but keep every change reviewable, reversible, verifiable, and safe
 
 - Work on a branch for all repository changes.
 - Branch from the latest `main` before editing.
+- Rebase on the latest `main` before opening a pull request.
 - Do not work directly on `main` unless a maintainer explicitly says this repository is being treated as personal scratch space.
 - Do not merge without explicit human approval.
 - Do not rewrite shared history unless explicitly instructed.
+- Every delegated agent or workstream must own exactly one branch and submit exactly one pull request. This is a hard line.
+- Do not put several agents' work on one shared branch unless a maintainer explicitly requests it.
+- For stacked pull requests, base each pull request on the previous pull request head. The head branch must contain only that workstream's commits. Do not merge lower stack branches into higher stack branches; prefer rebase or cherry-pick. Never force-push shared or maintainer branches without approval.
 
 ## Atomic Commits
 
 - Use Conventional Commits.
 - One commit should represent one reviewable intent.
+- One pull request should represent one reviewable intent.
 - Keep unrelated docs, code, tests, generated files, dependency changes, and CI changes in separate commits.
 - Prefer one clean commit over several artificial commits.
 - Prefer several clean commits over one mixed commit.
+- No commit may change more than 3 files unless a maintainer explicitly approves before the commit.
+- If a task touches more than 3 files, split the work before committing.
+- Do not spread many file changes across a few broad commits.
+- Scaffold, generated, lockfile, and mechanical rename exceptions still require explicit maintainer approval before commit if they affect more than 3 files.
+- Test changes follow the same split rule: one test intent per commit, with unrelated unit, regression, fixture, and smoke tests separated into their own commits.
+- Final integration pull requests must contain only integration glue, conflict resolution, connecting docs, and end-to-end verification updates.
 
 Allowed commit types:
 
