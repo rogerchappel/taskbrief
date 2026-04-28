@@ -9,15 +9,17 @@ describe("workspace config", () => {
 
   it("loads PRD-shaped repo config", () => {
     const config = parseWorkspaceConfig(fixture);
+    const branchbrief = config.repos.branchbrief;
 
     assert.equal(config.workspace, "rogerchappel-oss");
-    assert.equal(config.repos.branchbrief.path, "~/Developer/my-opensource/branchbrief");
-    assert.deepEqual(config.repos.branchbrief.common_verification, [
+    assert.ok(branchbrief);
+    assert.equal(branchbrief.path, "~/Developer/my-opensource/branchbrief");
+    assert.deepEqual(branchbrief.common_verification, [
       "npm test",
       "npm run build",
       "npm run typecheck",
     ]);
-    assert.equal(config.repos.branchbrief.risk_defaults?.release, "medium");
+    assert.equal(branchbrief.risk_defaults?.release, "medium");
   });
 
   it("resolves repos by name, alias, and path basename", () => {
