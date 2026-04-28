@@ -1,0 +1,38 @@
+{
+  "version": "0.1",
+  "source": "taskbrief",
+  "workspace": "rogerchappel-oss",
+  "tasks": [
+    {
+      "id": "branchbrief-prepare-branchbrief-for-npm-release",
+      "repo": "branchbrief",
+      "branch": "agent/prepare-branchbrief-for-npm-release",
+      "type": "release",
+      "risk": "medium",
+      "objective": "Prepare branchbrief for npm release readiness without publishing.",
+      "allowedPaths": [
+        "package.json",
+        "README.md",
+        "docs/**",
+        "CHANGELOG.md"
+      ],
+      "forbiddenPaths": [
+        ".env*",
+        "secrets/**",
+        "dist/**"
+      ],
+      "verification": [
+        "npm test",
+        "npm run build",
+        "npm pack --dry-run"
+      ],
+      "stopConditions": [
+        "secrets or credentials required",
+        "unclear target branch",
+        "package publishing requested"
+      ],
+      "reviewPackRequired": true,
+      "requiresHumanApproval": true
+    }
+  ]
+}
