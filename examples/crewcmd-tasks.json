@@ -1,0 +1,86 @@
+{
+  "version": "0.1",
+  "source": "taskbrief",
+  "workspace": "rogerchappel-oss",
+  "tasks": [
+    {
+      "id": "branchbrief-npm-release-readiness",
+      "repo": "branchbrief",
+      "branch": "agent/npm-release-readiness",
+      "base": "main",
+      "type": "release",
+      "risk": "medium",
+      "objective": "Prepare branchbrief for its first npm release without publishing.",
+      "allowedPaths": [
+        "package.json",
+        "README.md",
+        "docs/**",
+        "CHANGELOG.md",
+        ".github/workflows/publish.yml"
+      ],
+      "forbiddenPaths": [
+        "src/**",
+        ".env*",
+        "secrets/**"
+      ],
+      "verification": [
+        "npm ci",
+        "npm test",
+        "npm run build",
+        "npm pack --dry-run"
+      ],
+      "stopConditions": [
+        "npm token required",
+        "package name unavailable",
+        "publish requested",
+        "secrets or credentials required"
+      ],
+      "expectedCommits": [
+        "chore(package): prepare npm package metadata",
+        "docs(npm): document first release process",
+        "ci(release): add npm publish workflow"
+      ],
+      "reviewPackRequired": true,
+      "requiresHumanApproval": true,
+      "agentPrompt": "Prepare branchbrief for release readiness only. Do not publish, request tokens, or touch source files unless a maintainer expands the task."
+    },
+    {
+      "id": "product-videogen-mobile-qa",
+      "repo": "product-videogen",
+      "branch": "agent/mobile-qa-demo-readiness",
+      "base": "main",
+      "type": "qa",
+      "risk": "medium",
+      "objective": "Produce a mobile QA checklist and test report before the next demo.",
+      "allowedPaths": [
+        "docs/**",
+        "test-results/**",
+        "qa/**"
+      ],
+      "forbiddenPaths": [
+        "auth/**",
+        "billing/**",
+        "production/**",
+        ".env*",
+        "secrets/**"
+      ],
+      "verification": [
+        "npm test",
+        "npm run build",
+        "npm run test:mobile"
+      ],
+      "stopConditions": [
+        "auth or billing code needs changes",
+        "production data required",
+        "secrets or credentials required",
+        "mobile test command is missing"
+      ],
+      "expectedCommits": [
+        "docs(qa): add mobile demo readiness report"
+      ],
+      "reviewPackRequired": true,
+      "requiresHumanApproval": true,
+      "agentPrompt": "Run the mobile QA workflow and document findings. Do not modify auth, billing, production data, environment files, or secrets."
+    }
+  ]
+}

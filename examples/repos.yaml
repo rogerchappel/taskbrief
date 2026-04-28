@@ -1,0 +1,84 @@
+workspace: rogerchappel-oss
+defaults:
+  requires_pr: true
+  review_pack_required: true
+  forbidden_by_default:
+    - .env*
+    - secrets/**
+repos:
+  branchbrief:
+    path: ~/Developer/my-opensource/branchbrief
+    type: oss-cli
+    default_base: main
+    docs_url: https://branchbrief.rogerchappel.com
+    common_verification:
+      - npm ci
+      - npm test
+      - npm run build
+    risk_defaults:
+      docs: low
+      tests: low
+      ci: medium
+      release: medium
+      npm: medium
+      auth: high
+      payments: high
+      production_data: high
+  agentic-oss-template:
+    path: ~/Developer/my-opensource/agentic-oss-template
+    type: oss-template
+    default_base: main
+    common_verification:
+      - ./scripts/validate-template.sh
+    risk_defaults:
+      docs: low
+      templates: medium
+      ci: medium
+  CrewCMD:
+    path: ~/Developer/my-opensource/CrewCMD
+    type: community-oss
+    default_base: main
+    common_verification:
+      - npm test
+      - npm run build
+    forbidden_by_default:
+      - .env*
+      - secrets/**
+      - production/**
+    risk_defaults:
+      docs: low
+      tests: low
+      orchestration: medium
+      dispatch: high
+  product-videogen:
+    path: ~/Developer/work/product-videogen
+    type: product
+    default_base: main
+    production_sensitive: true
+    common_verification:
+      - npm test
+      - npm run build
+      - npm run test:mobile
+    forbidden_by_default:
+      - auth/**
+      - billing/**
+      - production/**
+      - .env*
+      - secrets/**
+    risk_defaults:
+      docs: low
+      qa: medium
+      release: medium
+      auth: high
+      billing: high
+      production_data: high
+  roger-website:
+    path: ~/Developer/my-opensource/roger-website
+    type: content-site
+    default_base: main
+    common_verification:
+      - npm run build
+    risk_defaults:
+      blog: low
+      docs: low
+      deploy: medium

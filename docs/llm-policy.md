@@ -60,6 +60,33 @@ Disclose AI assistance in the pull request or review pack when:
 - generated text may affect legal, security, privacy, or compliance expectations
 - project policy, contributor policy, or platform rules require disclosure
 
+## taskbrief LLM Mode
+
+`taskbrief` must treat LLM parsing as explicit opt-in behavior. By default, the
+CLI and skill should use local templates and structured parsing without network
+calls, API keys, hidden credential use, or automatic dispatch.
+
+Before any LLM call, print a disclosure with this shape:
+
+```text
+LLM mode enabled.
+Provider: <provider>
+Model: <model>
+Credential source: <ENV_KEY or local/no auth>
+Input: <file/stdin>
+Output format: <markdown|yaml|json|crewcmd>
+Network: <yes/no>
+```
+
+The disclosure must never print secret values. It may name the credential source
+such as `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, or
+`local/no auth` for Ollama.
+
+LLM input should be limited to the user-provided brain dump and workspace config.
+Do not send secrets, `.env` files, source code, repository contents, production
+data, or private customer data unless a maintainer explicitly approves that data
+class for the selected provider.
+
 ## Source and License Hygiene
 
 Agents must avoid copying substantial text or code from external sources unless the source license allows reuse and attribution requirements are satisfied.
