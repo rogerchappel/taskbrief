@@ -1,0 +1,28 @@
+tasks:
+  - id: <repo-short-purpose>
+    title: <short title>
+    repo: <repo or unknown>
+    branch: agent/<short-purpose>
+    type: <docs|test|fix|feat|ci|release|qa|review|chore|refactor>
+    risk: <low|medium|high>
+    objective: <one-sentence outcome>
+    context: <relevant background, constraints, and uncertainty>
+    allowed_paths:
+      - <path or glob>
+    forbidden_paths:
+      - .env*
+      - secrets/**
+    verification:
+      - <command or manual check>
+    stop_conditions:
+      - secrets or credentials required
+      - production data mutation required
+      - destructive operation required
+      - missing verification command
+    expected_commits:
+      - <type(scope): summary>
+    review_pack_required: true
+    human_decision_needed:
+      - <approval, confirmation, or none>
+    agent_prompt: |
+      <copy-ready agent prompt>
