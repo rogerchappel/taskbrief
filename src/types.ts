@@ -38,3 +38,20 @@ export interface UnknownRepoResolution {
 }
 
 export type ResolveRepoResult = RepoResolution | UnknownRepoResolution;
+
+export type RiskSignalSource = "keyword" | "repo_default" | "fallback";
+
+export interface RiskSignal {
+  risk: RiskLevel;
+  source: RiskSignalSource;
+  value: string;
+}
+
+export interface RiskClassification {
+  risk: RiskLevel;
+  requiresHumanApproval: boolean;
+  reviewRequired: boolean;
+  dispatchAllowed: boolean;
+  signals: RiskSignal[];
+  reason: string;
+}
