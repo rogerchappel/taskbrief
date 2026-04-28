@@ -11,6 +11,8 @@ format and uses semantic versioning when versioned releases are published.
 
 - Initial taskbrief product requirements.
 - OSS repository scaffold from `agentic-oss-template`.
+- README and examples alignment for current V1 module status, pending CLI
+  parse integration, and local-first LLM-explicit policy.
 
 ## Release Links
 

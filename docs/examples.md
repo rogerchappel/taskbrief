@@ -1,8 +1,15 @@
 # Examples
 
-This page shows copy-ready examples for the planned `taskbrief` CLI. The V1
-implementation is still in progress, but the examples define the intended input
-and output contracts.
+This page shows target examples for the `taskbrief` CLI and the fixture files
+used by the current module-level implementation. The V1 parser, risk, workspace,
+renderer, and CrewCMD export modules exist, but the `taskbrief parse` CLI command
+is still integration work.
+
+Current CLI smoke command:
+
+```bash
+npm run cli -- --help
+```
 
 ## Parse a Voice Dump
 
@@ -61,8 +68,8 @@ pbpaste | taskbrief parse \
   --format yaml
 ```
 
-stdin support should behave the same as file input, except the disclosure and
-review output should identify the input as `stdin`.
+stdin support is planned. It should behave the same as file input, except the
+disclosure and review output should identify the input as `stdin`.
 
 ## Explicit LLM Mode
 
@@ -75,9 +82,10 @@ taskbrief parse examples/voice-dump.txt \
   --format yaml
 ```
 
-LLM mode must be explicit. Before any network call, the CLI must disclose the
-provider, model, credential source, input, output format, and whether network
-access will be used. The disclosure must never print secret values.
+LLM mode must be explicit when CLI/provider integration lands. Before any
+network call, the CLI must disclose the provider, model, credential source,
+input, output format, and whether network access will be used. The disclosure
+must never print secret values.
 
 Expected disclosure shape:
 

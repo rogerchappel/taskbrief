@@ -16,11 +16,22 @@ CrewCMD     = queue -> worktrees/agents/PRs
 
 ## Status
 
-This repository is being scaffolded from
-[`agentic-oss-template`](https://github.com/rogerchappel/agentic-oss-template).
-The product requirements are captured in [docs/PRD.md](docs/PRD.md).
+This repository now contains the V1 building blocks for deterministic task
+shaping, but the end-user CLI integration is still being completed.
 
-The V1 implementation is not built yet.
+Current merged status:
+
+- Package scaffold, CLI help/version shell, and TypeScript build setup exist.
+- Deterministic parser modules can split brain dumps into task queue objects.
+- Workspace config parsing, repo inference, risk classification, Markdown,
+  YAML, JSON, and CrewCMD renderers are implemented at module level.
+- The Codex/OpenClaw skill and reference docs exist.
+- `taskbrief parse`, stdin parsing, CLI output flags, and CLI LLM provider
+  wiring are planned integration work and should not be treated as complete
+  until their PRs are merged.
+
+See [docs/PRD.md#25-acceptance-criteria](docs/PRD.md#25-acceptance-criteria)
+for the current V1 acceptance checklist.
 
 ## When to Use It
 
@@ -43,7 +54,21 @@ Do not use `taskbrief` to:
 - transcribe audio
 - make production, security, billing, auth, or data decisions without human review
 
-## Planned CLI
+## Current Commands
+
+From a checkout:
+
+```bash
+npm install
+npm run cli -- --help
+npm run build
+node dist/cli.js --help
+```
+
+The current CLI exposes package help and version metadata. Parsing commands are
+not yet available through the CLI on `main`.
+
+## Target CLI
 
 ```bash
 taskbrief new
@@ -55,7 +80,7 @@ taskbrief parse brain-dump.txt --format json --output tasks.json
 taskbrief parse brain-dump.txt --crewcmd --output crewcmd-tasks.json
 ```
 
-stdin support is planned:
+stdin support is also planned:
 
 ```bash
 pbpaste | taskbrief parse --workspace repos.yaml --format yaml
@@ -72,7 +97,7 @@ Structured templates locally. LLM parsing by explicit opt-in.
 By default, `taskbrief` should make no network calls, require no API keys, use no
 hidden credentials, and dispatch no agents.
 
-LLM mode must be explicit:
+LLM mode must be explicit when implemented:
 
 ```bash
 taskbrief parse brain-dump.txt --llm --provider openai
@@ -85,7 +110,8 @@ input, output format, and network behavior.
 
 ## CrewCMD Export
 
-`taskbrief` will be able to produce CrewCMD-compatible queue output:
+The module-level CrewCMD exporter produces CrewCMD-compatible queue objects.
+CLI access through `taskbrief parse --crewcmd` is planned integration work.
 
 ```json
 {

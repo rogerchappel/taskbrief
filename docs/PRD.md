@@ -1099,31 +1099,36 @@ docs/examples.md
 
 ## 25. Acceptance Criteria
 
+Checklist state reflects the current merged `main` branch, not unmerged
+implementation PRs. A checked item means the capability exists in the repository
+at module, docs, skill, or CLI level as applicable. End-user CLI parsing remains
+incomplete until `taskbrief parse` is wired into the CLI.
+
 V1 is complete when:
 
-- [ ] CLI exists
+- [x] CLI exists
 - [ ] `taskbrief parse <file>` works
 - [ ] stdin input works
-- [ ] workspace config loads
-- [ ] repo assignment works when repo names are clear
-- [ ] unclear repos are marked uncertain
-- [ ] task splitting works on a cross-repo blob
-- [ ] risk classification works
-- [ ] Markdown output works
-- [ ] YAML output works
-- [ ] JSON output works
-- [ ] CrewCMD export works
+- [x] workspace config loads
+- [x] repo assignment works when repo names are clear
+- [x] unclear repos are marked uncertain
+- [x] task splitting works on a cross-repo blob
+- [x] risk classification works
+- [x] Markdown output works
+- [x] YAML output works
+- [x] JSON output works
+- [x] CrewCMD export works
 - [ ] LLM mode is explicit
-- [ ] no LLM call happens by default
-- [ ] high-risk tasks require human approval
-- [ ] stop conditions are included
-- [ ] `skills/taskbrief/SKILL.md` exists
-- [ ] skill has valid front matter
-- [ ] skill includes task schema and safety rules
-- [ ] examples exist
-- [ ] docs exist
+- [x] no LLM call happens by default
+- [x] high-risk tasks require human approval
+- [x] stop conditions are included
+- [x] `skills/taskbrief/SKILL.md` exists
+- [x] skill has valid front matter
+- [x] skill includes task schema and safety rules
+- [x] examples exist
+- [x] docs exist
 - [ ] tests pass
-- [ ] README explains usage clearly
+- [x] README explains usage clearly
 
 ## 26. Suggested Initial Commits
 
