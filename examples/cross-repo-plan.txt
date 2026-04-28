@@ -1,0 +1,18 @@
+Workspace: rogerchappel-oss
+
+Plan:
+
+1. branchbrief needs npm release readiness work before v0.1.0. Review package
+   metadata, bin entry, release docs, changelog, and dry-run packaging. Do not
+   publish.
+2. branchbrief docs deployment needs verification. Confirm the docs build and
+   Cloudflare Pages workflow shape, but stop if deployment credentials are
+   needed.
+3. agentic-oss-template should include Dependabot examples for npm packages and
+   GitHub Actions workflows.
+4. CrewCMD needs a PR triage pass. Summarize open review feedback and create
+   follow-up task briefs. Do not merge or close PRs.
+5. product-videogen needs mobile QA before demo. This is medium risk because it
+   touches a product repo and release readiness. Do not touch auth, billing,
+   production data, secrets, or environment files.
+6. roger-website needs a blog draft explaining the agent workflow.

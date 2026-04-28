@@ -1,0 +1,20 @@
+Need to fix branchbrief npm release readiness, but do not publish anything yet.
+Check package metadata, bin path, README install docs, changelog, and the release
+process. If npm tokens or package ownership decisions are needed, stop and ask.
+
+Also deploy docs for branchbrief. I think the Cloudflare Pages config is mostly
+there, but I want an agent to verify the docs build and the deployment workflow.
+Do not touch production secrets.
+
+The agentic OSS template should get Dependabot examples for npm and GitHub
+Actions. Keep that separate from branchbrief.
+
+CrewCMD has a couple of pull requests that need a review pass. I only want a
+summary and actionable follow-up tasks, not direct merging.
+
+Product-videogen still needs mobile testing before the next demo. That is a
+product repo, so keep it human-gated and avoid auth, billing, production data,
+and secrets.
+
+Finally, write a blog draft about the new workflow from voice dump to taskbrief
+to CrewCMD to branchbrief.
