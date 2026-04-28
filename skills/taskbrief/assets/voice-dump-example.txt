@@ -1,0 +1,1 @@
+Okay we need to get branchbrief ready for npm, deploy the docs site, set up dependabot on agentic-oss-template, review the CrewCMD PRs, and product-videogen still needs mobile testing on iPhone and tablet. Also write a blog about turning brain dumps into task queues.
