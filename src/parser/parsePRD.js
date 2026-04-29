@@ -51,7 +51,14 @@ const NON_TASK_SECTIONS = [
 ];
 
 function isPRDDocument(text) {
-  return PRD_HEADER_PATTERNS.some((pattern) => pattern.test(text));
+  if (PRD_HEADER_PATTERNS.some((pattern) => pattern.test(text))) return true;
+
+  return (
+    /^#\s+\S+/m.test(text) &&
+    /^Status:\s+ready\b/im.test(text) &&
+    /^##\s+Scorecard\b/im.test(text) &&
+    /^##\s+V1\s+Scope\b/im.test(text)
+  );
 }
 
 export function parsePRD(input, options = {}) {
@@ -62,6 +69,7 @@ export function parsePRD(input, options = {}) {
   }
 
   const workspace = options.workspace ?? "default";
+  const repository = inferRepositoryName(normalized);
   const taskCandidates = [];
 
   for (const { heading, extract } of TASK_SOURCE_SECTIONS) {
@@ -89,7 +97,7 @@ export function parsePRD(input, options = {}) {
   }
 
   const tasks = uniqueTasks.map((text, index) =>
-    normalizeTask({ text, repo: "taskbrief" }, index),
+    normalizeTask({ text, repo: repository }, index),
   );
 
   return {
@@ -98,6 +106,18 @@ export function parsePRD(input, options = {}) {
     workspace,
     tasks,
   };
+}
+
+function inferRepositoryName(text) {
+  const headingMatch = text.match(/^#\s+(?:PRD:\s*)?(.+?)\s*$/im);
+  if (!headingMatch) return "unknown";
+
+  return headingMatch[1]
+    .replace(/\s+status:.*$/i, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "unknown";
 }
 
 function extractSectionContent(text, headingRegex) {
