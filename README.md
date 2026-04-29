@@ -31,6 +31,8 @@ Current merged status:
 - `taskbrief parse --llm --provider openai` is available as an explicit opt-in
   path for BYO or messy PRDs, with strict schema validation and fail-closed
   output handling.
+- `taskbrief parse --orchestration` can emit deterministic orchestration
+  handoff artifacts that define sequential waves and concurrent task groups.
 
 See [docs/PRD.md#25-acceptance-criteria](docs/PRD.md#25-acceptance-criteria)
 for the current V1 acceptance checklist.
@@ -68,7 +70,8 @@ node dist/cli.js --help
 ```
 
 The current CLI exposes package help/version metadata plus deterministic
-`parse` and `new` commands, with an opt-in OpenAI-backed `--llm` parse mode.
+`parse` and `new` commands, with an opt-in OpenAI-backed `--llm` parse mode and
+optional orchestration handoff artifacts.
 
 ## CLI Examples
 
@@ -80,6 +83,7 @@ taskbrief parse brain-dump.txt --output tasks.md
 taskbrief parse brain-dump.txt --format yaml --output tasks.yaml
 taskbrief parse brain-dump.txt --format json --output tasks.json
 taskbrief parse brain-dump.txt --crewcmd --output crewcmd-tasks.json
+taskbrief parse docs/PRD.md --output docs/TASKS.md --orchestration
 ```
 
 stdin is supported when no input file is provided:
@@ -133,6 +137,33 @@ LLM mode is fail-closed:
 Current provider support:
 
 - `openai` via `OPENAI_API_KEY`
+
+## Orchestration Handoff
+
+`--orchestration` is deterministic and does not require `--llm`. It operates on
+the task queue produced by either the default parser or explicit LLM mode.
+
+When enabled, Taskbrief writes two handoff artifacts next to `--output`:
+
+- `ORCHESTRATION.md` for humans and orchestrator prompts
+- `orchestration.json` for tools
+
+```bash
+taskbrief parse docs/PRD.md --output docs/TASKS.md --orchestration
+taskbrief parse messy-prd.md --llm --provider openai --output docs/TASKS.md --orchestration
+```
+
+The handoff explicitly separates sequential dependency waves from concurrent
+work inside a wave:
+
+- Wave 1 tasks are dispatchable first and may run concurrently when listed
+  together.
+- Later waves depend on all earlier waves completing and passing verification.
+- High-risk or human-decision tasks are marked blocked until resolved.
+- Final validation tasks are held for the closeout wave.
+
+Use this output for StackForge or an external orchestrator instead of dispatching
+every task at once.
 
 ## CrewCMD Export
 

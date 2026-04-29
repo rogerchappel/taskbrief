@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import { readFile, writeFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
 import { stdin as processStdin, stdout as processStdout } from "node:process";
 
 import { getRuntimeInfo } from "./index.js";
 import { parseWithLlm } from "./llm/index.js";
+import { buildOrchestrationHandoff, renderOrchestrationMarkdown } from "./orchestration.js";
 // @ts-expect-error Existing JavaScript modules do not publish local declarations yet.
 import { exportCrewCmd } from "./crewcmd/index.js";
 // @ts-expect-error Existing JavaScript modules do not publish local declarations yet.
@@ -30,6 +32,7 @@ interface ParseOptions {
   llm?: boolean;
   provider?: string;
   model?: string;
+  orchestration?: boolean;
 }
 
 interface NewOptions {
@@ -65,6 +68,7 @@ export function createCli(io: CliIo = {}): Command {
     .option("--llm", "Use explicit LLM-backed parsing for BYO or messy PRDs.")
     .option("--provider <provider>", "LLM provider for --llm mode (currently: openai).")
     .option("--model <model>", "Override the LLM model used with --llm mode.")
+    .option("--orchestration", "Also emit ORCHESTRATION.md and orchestration.json handoff artifacts.")
     .action(async (file: string | undefined, options: ParseOptions, command: Command) => {
       validateInputType(options.type);
       const format =
@@ -85,6 +89,9 @@ export function createCli(io: CliIo = {}): Command {
       const exportQueue = options.crewcmd ? exportCrewCmd(queue, { workspace: queue.workspace }) : queue;
 
       await writeRenderedOutput(renderQueue(exportQueue, format), options.output, stdout);
+      if (options.orchestration) {
+        await writeOrchestrationArtifacts(queue, options.output, stdout);
+      }
     });
 
   program
@@ -173,6 +180,24 @@ async function writeRenderedOutput(
   }
 
   stdout.write(output);
+}
+
+async function writeOrchestrationArtifacts(
+  queue: unknown,
+  outputPath: string | undefined,
+  stdout: NodeJS.WritableStream,
+): Promise<void> {
+  const handoff = buildOrchestrationHandoff(queue as Parameters<typeof buildOrchestrationHandoff>[0]);
+  const outputDirectory = outputPath ? dirname(outputPath) : process.cwd();
+  const markdownPath = join(outputDirectory, "ORCHESTRATION.md");
+  const jsonPath = join(outputDirectory, "orchestration.json");
+
+  await writeFile(markdownPath, `${renderOrchestrationMarkdown(handoff)}\n`, "utf8");
+  await writeFile(jsonPath, `${JSON.stringify(handoff, null, 2)}\n`, "utf8");
+
+  if (!outputPath) {
+    stdout.write(`\nWrote orchestration artifacts:\n- ${markdownPath}\n- ${jsonPath}\n`);
+  }
 }
 
 async function readStream(stream: NodeJS.ReadableStream): Promise<string> {

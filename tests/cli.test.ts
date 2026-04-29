@@ -78,6 +78,33 @@ describe("taskbrief CLI", () => {
     }
   });
 
+  it("emits orchestration handoff artifacts with sequential waves and concurrent tasks", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "taskbrief-cli-"));
+    const outputPath = join(directory, "TASKS.md");
+
+    try {
+      const stdout = await runCli([
+        "parse",
+        "tests/fixtures/parser/qualitygate-prd.md",
+        "--output",
+        outputPath,
+        "--orchestration",
+      ]);
+      const markdown = await readFile(join(directory, "ORCHESTRATION.md"), "utf8");
+      const json = JSON.parse(await readFile(join(directory, "orchestration.json"), "utf8"));
+
+      expect(stdout).toBe("");
+      expect(markdown).toContain("# Orchestration Handoff");
+      expect(markdown).toContain("## Sequential Waves");
+      expect(json.waves.length).toBeGreaterThan(1);
+      expect(json.waves[0]).toMatchObject({ dispatch: "now" });
+      expect(json.tasks.some((task: { depends_on: string[] }) => task.depends_on.length > 0)).toBe(true);
+      expect(json.tasks.some((task: { can_run_concurrently_with: string[] }) => task.can_run_concurrently_with.length > 0)).toBe(true);
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
   it("creates a deterministic manual task brief", async () => {
     const output = await runCli([
       "new",
