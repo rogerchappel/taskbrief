@@ -9,7 +9,7 @@ import { exportCrewCmd } from "./crewcmd/index.js";
 // @ts-expect-error Existing JavaScript modules do not publish local declarations yet.
 import { renderJson, renderMarkdown, renderYaml } from "./output/index.js";
 // @ts-expect-error Existing JavaScript modules do not publish local declarations yet.
-import { normalizeTask, parseBrainDump } from "./parser/index.js";
+import { normalizeTask, parseBrainDump, parsePRD } from "./parser/index.js";
 import { loadWorkspaceConfig } from "./workspace/loadWorkspace.js";
 
 const FORMATS = ["markdown", "yaml", "json"] as const;
@@ -71,7 +71,10 @@ export function createCli(io: CliIo = {}): Command {
           : validateFormat(options.format);
       const input = file ? await readFile(file, "utf8") : await readStream(stdin);
       const workspace = options.workspace ? loadWorkspaceConfig(options.workspace).workspace : undefined;
-      const queue = parseBrainDump(input, { workspace });
+      
+      // Try PRD parsing first (deterministic, section-based extraction)
+      const prdQueue = parsePRD(input, { workspace });
+      const queue = prdQueue ?? parseBrainDump(input, { workspace });
       const exportQueue = options.crewcmd ? exportCrewCmd(queue, { workspace: queue.workspace }) : queue;
 
       await writeRenderedOutput(renderQueue(exportQueue, format), options.output, stdout);
