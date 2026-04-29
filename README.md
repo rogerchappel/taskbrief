@@ -107,12 +107,18 @@ taskbrief parse docs/PRD.md --format json --output tasks.json
 ```
 
 Use LLM mode only when you explicitly want help extracting tasks from a BYO or
-messy PRD that the deterministic parser cannot shape reliably:
+messy PRD that the deterministic parser cannot shape reliably. The OpenAI
+provider reads `OPENAI_API_KEY` from the process environment, so it can come from
+your shell, CI secrets, or an inline command prefix:
 
 ```bash
+taskbrief parse messy-prd.md --llm --provider openai
 OPENAI_API_KEY=... taskbrief parse messy-prd.md --llm --provider openai
 OPENAI_API_KEY=... taskbrief parse messy-prd.md --llm --provider openai --model gpt-4.1-mini
 ```
+
+If `--model` is omitted, the OpenAI provider currently defaults to
+`gpt-4.1-mini`.
 
 LLM mode is fail-closed:
 
