@@ -13,6 +13,7 @@ test("extracts clean tasks from V1 Scope in oss-ideas style PRD", async () => {
 
   assert.ok(queue, "PRD should be detected and parsed");
   assert.equal(queue.workspace, "test-workspace");
+  assert.equal(queue.tasks[0].repo, "atomcommit");
   assert.ok(queue.tasks.length > 0, "Should extract tasks from V1 Scope");
   
   // Should have tasks from V1 Scope (5 items in our fixture)
@@ -27,6 +28,40 @@ test("extracts clean tasks from V1 Scope in oss-ideas style PRD", async () => {
   assert.ok(titles.some((t) => /cli package/i.test(t)), "Should include CLI task");
   assert.ok(titles.some((t) => /file grouping/i.test(t)), "Should include grouping task");
   assert.ok(titles.some((t) => /conventional commit/i.test(t)), "Should include commit message task");
+});
+
+
+test("detects oss-ideas PRDs without PRD-prefixed headings", () => {
+  const input = `# repoport
+
+Status: ready
+
+## Scorecard
+
+| Criterion | Points | Notes |
+|---|---:|---|
+| Demand signal | 18/20 | Strong signal. |
+
+## Pitch
+
+A repo fleet dashboard.
+
+## V1 Scope
+
+- Scan local projects folder
+- Match remotes to GitHub repos
+- Show dirty/stale branch state
+`;
+
+  const queue = parsePRD(input);
+
+  assert.ok(queue, "oss-ideas style document should be parsed as a PRD");
+  assert.equal(queue.tasks.length, 3);
+  assert.equal(queue.tasks[0].repo, "repoport");
+
+  const titles = queue.tasks.map((task) => task.title).join("\n");
+  assert.match(titles, /scan local projects folder/i);
+  assert.doesNotMatch(titles, /scorecard|demand signal|criterion/i);
 });
 
 test("returns null for non-PRD text", () => {
