@@ -140,8 +140,11 @@ Current provider support:
 
 ## Orchestration Handoff
 
-`--orchestration` is deterministic and does not require `--llm`. It operates on
-the task queue produced by either the default parser or explicit LLM mode.
+`--orchestration` is deterministic by default and does not require `--llm`. It
+operates on the task queue produced by either the default parser or explicit LLM
+mode. When combined with `--llm`, Taskbrief also asks the configured provider to
+refine the dependency waves, then validates the refined plan before writing any
+files.
 
 When enabled, Taskbrief writes two handoff artifacts next to `--output`:
 
@@ -161,6 +164,11 @@ work inside a wave:
 - Later waves depend on all earlier waves completing and passing verification.
 - High-risk or human-decision tasks are marked blocked until resolved.
 - Final validation tasks are held for the closeout wave.
+
+LLM-refined orchestration is also fail-closed: malformed JSON, schema-invalid
+wave plans, duplicate task ids, unknown task ids, or omitted task ids all fail
+with a non-zero exit before `TASKS.md`, `ORCHESTRATION.md`, or
+`orchestration.json` are written.
 
 Use this output for StackForge or an external orchestrator instead of dispatching
 every task at once.

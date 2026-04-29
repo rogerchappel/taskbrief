@@ -181,6 +181,191 @@ describe("taskbrief CLI", () => {
     expect(parsed.tasks[0].repo).toBe("taskbrief");
   });
 
+  it("refines orchestration with LLM when --llm and --orchestration are combined", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "sk-test");
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            choices: [
+              {
+                message: {
+                  content: JSON.stringify({
+                    tasks: [
+                      {
+                        id: "demo-build-core",
+                        title: "Build core feature",
+                        repo: "demo",
+                        type: "feature",
+                        risk: "medium",
+                        objective: "Implement the core feature first.",
+                        context: "Feature work must happen before docs.",
+                        allowed_paths: ["src/**"],
+                        forbidden_paths: [".env*"],
+                        verification: ["npm test"],
+                        stop_conditions: ["missing product decision"],
+                        expected_commits: ["feat: build core feature"],
+                        review_pack_required: true,
+                        human_decision_needed: [],
+                        agent_prompt: "Build the core feature.",
+                      },
+                      {
+                        id: "demo-write-docs",
+                        title: "Write docs",
+                        repo: "demo",
+                        type: "docs",
+                        risk: "low",
+                        objective: "Document the feature after implementation.",
+                        context: "Docs depend on the implemented behavior.",
+                        allowed_paths: ["README.md"],
+                        forbidden_paths: [".env*"],
+                        verification: ["npm test"],
+                        stop_conditions: ["feature not implemented"],
+                        expected_commits: ["docs: document core feature"],
+                        review_pack_required: true,
+                        human_decision_needed: [],
+                        agent_prompt: "Document the feature.",
+                      },
+                    ],
+                  }),
+                },
+              },
+            ],
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            choices: [
+              {
+                message: {
+                  content: JSON.stringify({
+                    waves: [
+                      { name: "LLM foundation", mode: "sequential", task_ids: ["demo-build-core"] },
+                      { name: "LLM docs", mode: "sequential", task_ids: ["demo-write-docs"] },
+                    ],
+                    notes: ["Docs depend on the implemented feature."],
+                  }),
+                },
+              },
+            ],
+          }),
+        }),
+    );
+
+    const directory = await mkdtemp(join(tmpdir(), "taskbrief-cli-"));
+    const outputPath = join(directory, "TASKS.md");
+
+    try {
+      await runCli(["parse", "--llm", "--provider", "openai", "--output", outputPath, "--orchestration"], {
+        stdin: "Build feature then write docs.",
+      });
+      const json = JSON.parse(await readFile(join(directory, "orchestration.json"), "utf8"));
+
+      expect(json.generated_from).toContain("llm-orchestration (openai:");
+      expect(json.refinement_notes).toEqual(["Docs depend on the implemented feature."]);
+      expect(json.waves.map((wave: { name: string }) => wave.name)).toEqual(["LLM foundation", "LLM docs"]);
+      expect(json.tasks.find((task: { id: string }) => task.id === "demo-write-docs")?.depends_on).toEqual([
+        "demo-build-core",
+      ]);
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
+  it("does not write output files when LLM orchestration refinement fails", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "sk-test");
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            choices: [
+              {
+                message: {
+                  content: JSON.stringify({
+                    tasks: [
+                      {
+                        id: "demo-build-core",
+                        title: "Build core feature",
+                        repo: "demo",
+                        type: "feature",
+                        risk: "medium",
+                        objective: "Implement the core feature first.",
+                        context: "Feature work must happen before docs.",
+                        allowed_paths: ["src/**"],
+                        forbidden_paths: [".env*"],
+                        verification: ["npm test"],
+                        stop_conditions: ["missing product decision"],
+                        expected_commits: ["feat: build core feature"],
+                        review_pack_required: true,
+                        human_decision_needed: [],
+                        agent_prompt: "Build the core feature.",
+                      },
+                      {
+                        id: "demo-write-docs",
+                        title: "Write docs",
+                        repo: "demo",
+                        type: "docs",
+                        risk: "low",
+                        objective: "Document the feature after implementation.",
+                        context: "Docs depend on the implemented behavior.",
+                        allowed_paths: ["README.md"],
+                        forbidden_paths: [".env*"],
+                        verification: ["npm test"],
+                        stop_conditions: ["feature not implemented"],
+                        expected_commits: ["docs: document core feature"],
+                        review_pack_required: true,
+                        human_decision_needed: [],
+                        agent_prompt: "Document the feature.",
+                      },
+                    ],
+                  }),
+                },
+              },
+            ],
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            choices: [
+              {
+                message: {
+                  content: JSON.stringify({
+                    waves: [{ name: "Missing docs", mode: "sequential", task_ids: ["demo-build-core"] }],
+                    notes: ["This omits a task and must fail closed."],
+                  }),
+                },
+              },
+            ],
+          }),
+        }),
+    );
+
+    const directory = await mkdtemp(join(tmpdir(), "taskbrief-cli-"));
+    const outputPath = join(directory, "TASKS.md");
+
+    try {
+      await expect(
+        runCli(["parse", "--llm", "--provider", "openai", "--output", outputPath, "--orchestration"], {
+          stdin: "Build feature then write docs.",
+        }),
+      ).rejects.toThrow(/LLM orchestration omitted task ids: demo-write-docs/);
+
+      await expect(access(outputPath)).rejects.toThrow();
+      await expect(access(join(directory, "ORCHESTRATION.md"))).rejects.toThrow();
+      await expect(access(join(directory, "orchestration.json"))).rejects.toThrow();
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
   it("fails clearly when LLM env is missing", async () => {
     vi.stubEnv("OPENAI_API_KEY", "");
 

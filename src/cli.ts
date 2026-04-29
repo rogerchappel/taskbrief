@@ -6,6 +6,7 @@ import { stdin as processStdin, stdout as processStdout } from "node:process";
 
 import { getRuntimeInfo } from "./index.js";
 import { parseWithLlm } from "./llm/index.js";
+import { refineOrchestrationWithLlm } from "./llm/orchestration.js";
 import { buildOrchestrationHandoff, renderOrchestrationMarkdown } from "./orchestration.js";
 // @ts-expect-error Existing JavaScript modules do not publish local declarations yet.
 import { exportCrewCmd } from "./crewcmd/index.js";
@@ -87,10 +88,14 @@ export function createCli(io: CliIo = {}): Command {
           })
         : (parsePRD(input, { workspace }) ?? parseBrainDump(input, { workspace }));
       const exportQueue = options.crewcmd ? exportCrewCmd(queue, { workspace: queue.workspace }) : queue;
+      const renderedOutput = renderQueue(exportQueue, format);
+      const orchestrationArtifacts = options.orchestration
+        ? await buildOrchestrationArtifacts(queue, options, file)
+        : undefined;
 
-      await writeRenderedOutput(renderQueue(exportQueue, format), options.output, stdout);
-      if (options.orchestration) {
-        await writeOrchestrationArtifacts(queue, options.output, stdout);
+      await writeRenderedOutput(renderedOutput, options.output, stdout);
+      if (orchestrationArtifacts) {
+        await writeOrchestrationArtifacts(orchestrationArtifacts, options.output, stdout);
       }
     });
 
@@ -182,18 +187,43 @@ async function writeRenderedOutput(
   stdout.write(output);
 }
 
-async function writeOrchestrationArtifacts(
+interface OrchestrationArtifacts {
+  markdown: string;
+  json: string;
+}
+
+async function buildOrchestrationArtifacts(
   queue: unknown,
+  options: ParseOptions,
+  file: string | undefined,
+): Promise<OrchestrationArtifacts> {
+  const taskQueue = queue as Parameters<typeof buildOrchestrationHandoff>[0];
+  let handoff = buildOrchestrationHandoff(taskQueue);
+  if (options.llm) {
+    handoff = await refineOrchestrationWithLlm(handoff, taskQueue, {
+      provider: validateLlmProvider(options.provider),
+      model: options.model,
+      inputSource: file ? { type: "file", path: file } : { type: "stdin" },
+    });
+  }
+
+  return {
+    markdown: `${renderOrchestrationMarkdown(handoff)}\n`,
+    json: `${JSON.stringify(handoff, null, 2)}\n`,
+  };
+}
+
+async function writeOrchestrationArtifacts(
+  artifacts: OrchestrationArtifacts,
   outputPath: string | undefined,
   stdout: NodeJS.WritableStream,
 ): Promise<void> {
-  const handoff = buildOrchestrationHandoff(queue as Parameters<typeof buildOrchestrationHandoff>[0]);
   const outputDirectory = outputPath ? dirname(outputPath) : process.cwd();
   const markdownPath = join(outputDirectory, "ORCHESTRATION.md");
   const jsonPath = join(outputDirectory, "orchestration.json");
 
-  await writeFile(markdownPath, `${renderOrchestrationMarkdown(handoff)}\n`, "utf8");
-  await writeFile(jsonPath, `${JSON.stringify(handoff, null, 2)}\n`, "utf8");
+  await writeFile(markdownPath, artifacts.markdown, "utf8");
+  await writeFile(jsonPath, artifacts.json, "utf8");
 
   if (!outputPath) {
     stdout.write(`\nWrote orchestration artifacts:\n- ${markdownPath}\n- ${jsonPath}\n`);
