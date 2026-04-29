@@ -202,12 +202,15 @@ export function renderOrchestrationMarkdown(handoff: OrchestrationHandoff): stri
 }
 
 function classifyPhase(task: TaskbriefTask): OrchestrationPhase {
-  const text = `${task.title} ${task.type} ${task.objective} ${task.context}`;
+  const title = task.title;
+  const titleAndType = `${task.title} ${task.type}`;
+  const titleTypeObjective = `${task.title} ${task.type} ${task.objective}`;
 
-  if (/final|closeout|release readiness|handoff|smoke/i.test(text)) return "final_validation";
-  if (/test|fixture|schema|qa|verify|verification|lint|typecheck|build/i.test(text)) return "verification";
-  if (/readme|docs?|documentation|example|github actions|workflow/i.test(text)) return "documentation";
-  if (/config|setup|scaffold|init|model|dependency|dependencies|package|cli flag/i.test(text)) return "foundation";
+  if (/final|closeout|release readiness|handoff|smoke/i.test(titleAndType)) return "final_validation";
+  if (/run safe checks in order|run checks in order|lint,? typecheck,? test,? build|final validation/i.test(title)) return "final_validation";
+  if (/readme|docs?|documentation|example|github actions|workflow/i.test(titleAndType)) return "documentation";
+  if (/\btests?\b|\btesting\b|fixture|schema|\bqa\b|verify|verification/i.test(titleAndType)) return "verification";
+  if (/config|setup|scaffold|init|model|dependency|dependencies|package manager|detect available scripts|cli flag/i.test(titleTypeObjective)) return "foundation";
   return "implementation";
 }
 
