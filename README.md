@@ -27,8 +27,10 @@ Current merged status:
   YAML, JSON, and CrewCMD renderers are implemented at module level.
 - The Codex/OpenClaw skill and reference docs exist.
 - `taskbrief parse`, stdin parsing, CLI output flags, and CrewCMD export are
-  available for deterministic local parsing. LLM provider calls remain reserved
-  behind `--llm` and are not wired yet.
+  available for deterministic local parsing.
+- `taskbrief parse --llm --provider openai` is available as an explicit opt-in
+  path for BYO or messy PRDs, with strict schema validation and fail-closed
+  output handling.
 
 See [docs/PRD.md#25-acceptance-criteria](docs/PRD.md#25-acceptance-criteria)
 for the current V1 acceptance checklist.
@@ -66,7 +68,7 @@ node dist/cli.js --help
 ```
 
 The current CLI exposes package help/version metadata plus deterministic
-`parse` and `new` commands.
+`parse` and `new` commands, with an opt-in OpenAI-backed `--llm` parse mode.
 
 ## CLI Examples
 
@@ -94,19 +96,37 @@ The default product stance is:
 Structured templates locally. LLM parsing by explicit opt-in.
 ```
 
-By default, `taskbrief` should make no network calls, require no API keys, use no
-hidden credentials, and dispatch no agents.
+By default, `taskbrief` makes no network calls, requires no API keys, uses no
+hidden credentials, and dispatches no agents.
 
-LLM mode must be explicit when implemented:
+Deterministic parsing stays the default:
 
 ```bash
-taskbrief parse brain-dump.txt --llm --provider openai
-taskbrief parse brain-dump.txt --llm --provider anthropic
-taskbrief parse brain-dump.txt --llm --provider ollama
+taskbrief parse brain-dump.txt
+taskbrief parse docs/PRD.md --format json --output tasks.json
 ```
 
-Before any LLM call, the CLI must disclose provider, model, credential source,
-input, output format, and network behavior.
+Use LLM mode only when you explicitly want help extracting tasks from a BYO or
+messy PRD that the deterministic parser cannot shape reliably:
+
+```bash
+OPENAI_API_KEY=... taskbrief parse messy-prd.md --llm --provider openai
+OPENAI_API_KEY=... taskbrief parse messy-prd.md --llm --provider openai --model gpt-4.1-mini
+```
+
+LLM mode is fail-closed:
+
+- no LLM call happens unless `--llm` is present
+- `--provider` is required
+- missing provider credentials fail with a non-zero exit and write no output
+- malformed JSON fails with a non-zero exit and write no output
+- schema-invalid JSON fails with a non-zero exit and write no output
+- valid LLM tasks are re-normalized through Taskbrief's deterministic formatting path
+- task context includes provenance like `Source: llm (openai:gpt-4.1-mini)`
+
+Current provider support:
+
+- `openai` via `OPENAI_API_KEY`
 
 ## CrewCMD Export
 
