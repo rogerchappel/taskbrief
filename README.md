@@ -17,7 +17,7 @@ CrewCMD     = queue -> worktrees/agents/PRs
 ## Status
 
 This repository now contains the V1 building blocks for deterministic task
-shaping, but the end-user CLI integration is still being completed.
+shaping, and deterministic local parsing is available through the CLI.
 
 Current merged status:
 
@@ -26,9 +26,9 @@ Current merged status:
 - Workspace config parsing, repo inference, risk classification, Markdown,
   YAML, JSON, and CrewCMD renderers are implemented at module level.
 - The Codex/OpenClaw skill and reference docs exist.
-- `taskbrief parse`, stdin parsing, CLI output flags, and CLI LLM provider
-  wiring are planned integration work and should not be treated as complete
-  until their PRs are merged.
+- `taskbrief parse`, stdin parsing, CLI output flags, and CrewCMD export are
+  available for deterministic local parsing. LLM provider calls remain reserved
+  behind `--llm` and are not wired yet.
 
 See [docs/PRD.md#25-acceptance-criteria](docs/PRD.md#25-acceptance-criteria)
 for the current V1 acceptance checklist.
@@ -65,10 +65,10 @@ npm run build
 node dist/cli.js --help
 ```
 
-The current CLI exposes package help and version metadata. Parsing commands are
-not yet available through the CLI on `main`.
+The current CLI exposes package help/version metadata plus deterministic
+`parse` and `new` commands.
 
-## Target CLI
+## CLI Examples
 
 ```bash
 taskbrief new
@@ -80,7 +80,7 @@ taskbrief parse brain-dump.txt --format json --output tasks.json
 taskbrief parse brain-dump.txt --crewcmd --output crewcmd-tasks.json
 ```
 
-stdin support is also planned:
+stdin is supported when no input file is provided:
 
 ```bash
 pbpaste | taskbrief parse --workspace repos.yaml --format yaml
@@ -111,7 +111,7 @@ input, output format, and network behavior.
 ## CrewCMD Export
 
 The module-level CrewCMD exporter produces CrewCMD-compatible queue objects.
-CLI access through `taskbrief parse --crewcmd` is planned integration work.
+CLI access is available through `taskbrief parse --crewcmd`.
 
 ```json
 {
