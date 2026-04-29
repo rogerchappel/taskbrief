@@ -38,8 +38,28 @@ export async function requestLlmTaskExtraction(
       messages: [
         {
           role: "system",
-          content:
-            "You convert messy PRDs into Taskbrief task queues. Return only JSON with the exact shape {\"tasks\":[...]} using snake_case keys. Do not wrap in markdown fences. Every task must include title, repo, type, risk, objective, context, allowed_paths, forbidden_paths, verification, stop_conditions, expected_commits, review_pack_required, human_decision_needed, and agent_prompt. No extra keys.",
+          content: [
+            "You convert messy PRDs into Taskbrief task queues.",
+            "Return only JSON with the exact shape {\"tasks\":[...]} using snake_case keys. Do not wrap in markdown fences.",
+            "No extra keys are allowed.",
+            "Every task must include these fields with these exact JSON types:",
+            "- title: string",
+            "- repo: string",
+            "- type: string",
+            "- risk: one of \"low\", \"medium\", or \"high\"",
+            "- objective: string",
+            "- context: string",
+            "- allowed_paths: array of strings",
+            "- forbidden_paths: array of strings",
+            "- verification: array of strings",
+            "- stop_conditions: array of strings",
+            "- expected_commits: array of strings",
+            "- review_pack_required: boolean",
+            "- human_decision_needed: array of strings; use [] when no decision is needed",
+            "- agent_prompt: string",
+            "Optional fields id and branch may be strings when useful.",
+            "Never use scalar strings, booleans, or numbers for array fields.",
+          ].join("\n"),
         },
         {
           role: "user",
