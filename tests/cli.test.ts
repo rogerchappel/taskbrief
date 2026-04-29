@@ -100,6 +100,12 @@ describe("taskbrief CLI", () => {
       expect(json.waves[0]).toMatchObject({ dispatch: "now" });
       expect(json.tasks.some((task: { depends_on: string[] }) => task.depends_on.length > 0)).toBe(true);
       expect(json.tasks.some((task: { can_run_concurrently_with: string[] }) => task.can_run_concurrently_with.length > 0)).toBe(true);
+      expect(json.tasks.find((task: { id: string }) => task.id.includes("build-a-cli-command"))?.phase).toBe(
+        "implementation",
+      );
+      expect(json.tasks.find((task: { id: string }) => task.id.includes("final-validation"))?.phase).toBe(
+        "final_validation",
+      );
     } finally {
       await rm(directory, { recursive: true, force: true });
     }
