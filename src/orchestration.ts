@@ -62,6 +62,16 @@ export interface OrchestrationHandoff {
   waves: OrchestrationWave[];
   tasks: OrchestrationTask[];
   dispatch_prompt: string;
+  refinement_notes?: string[];
+}
+
+export interface OrchestrationWavePlan {
+  waves: Array<{
+    name: string;
+    mode: "concurrent" | "sequential";
+    task_ids: string[];
+  }>;
+  notes: string[];
 }
 
 type OrchestrationPhase = "foundation" | "implementation" | "verification" | "documentation" | "final_validation";
@@ -156,6 +166,64 @@ export function buildOrchestrationHandoff(queue: TaskbriefQueue, options: { gene
   };
 }
 
+export function applyOrchestrationWavePlan(
+  handoff: OrchestrationHandoff,
+  plan: OrchestrationWavePlan,
+  options: { generatedFrom?: string } = {},
+): OrchestrationHandoff {
+  validateWavePlan(handoff, plan);
+
+  const taskById = new Map(handoff.tasks.map((task) => [task.id, task]));
+  const waves: OrchestrationWave[] = [];
+  const tasks: OrchestrationTask[] = [];
+  const priorTaskIds: string[] = [];
+
+  for (const plannedWave of plan.waves) {
+    const taskIds = plannedWave.task_ids;
+    const waveTasks = taskIds.map((id) => taskById.get(id)).filter((task): task is OrchestrationTask => Boolean(task));
+    const blockedTaskIds = waveTasks.filter((task) => task.blocked_by.length > 0).map((task) => task.id);
+    const dispatchableTaskIds = waveTasks.filter((task) => task.blocked_by.length === 0).map((task) => task.id);
+
+    for (const task of waveTasks) {
+      tasks.push({
+        ...task,
+        depends_on: [...priorTaskIds],
+        can_run_concurrently_with: taskIds.filter((id) => id !== task.id),
+        dispatchable: priorTaskIds.length === 0 && task.blocked_by.length === 0,
+      });
+    }
+
+    waves.push({
+      wave: waves.length + 1,
+      name: plannedWave.name,
+      mode: plannedWave.mode,
+      dispatch: blockedTaskIds.length === taskIds.length ? "after_human_decision" : priorTaskIds.length === 0 ? "now" : "after_dependencies",
+      task_ids: blockedTaskIds.length === taskIds.length ? taskIds : dispatchableTaskIds,
+    });
+
+    priorTaskIds.push(...taskIds);
+  }
+
+  const dispatchableNow = tasks.filter((task) => task.dispatchable).map((task) => task.id);
+  const blockedTasks = tasks.filter((task) => task.blocked_by.length > 0).map((task) => task.id);
+  const finalValidationTaskIds = tasks.filter((task) => task.phase === "final_validation").map((task) => task.id);
+
+  return {
+    ...handoff,
+    generated_from: options.generatedFrom ?? handoff.generated_from,
+    summary: {
+      total_tasks: tasks.length,
+      dispatchable_now: dispatchableNow,
+      blocked_tasks: blockedTasks,
+      final_validation_task_ids: finalValidationTaskIds,
+    },
+    waves,
+    tasks,
+    dispatch_prompt: buildDispatchPrompt(dispatchableNow, waves),
+    refinement_notes: plan.notes,
+  };
+}
+
 export function renderOrchestrationMarkdown(handoff: OrchestrationHandoff): string {
   return [
     "# Orchestration Handoff",
@@ -173,6 +241,9 @@ export function renderOrchestrationMarkdown(handoff: OrchestrationHandoff): stri
     "",
     handoff.dispatch_prompt,
     "",
+    ...(handoff.refinement_notes && handoff.refinement_notes.length > 0
+      ? ["## LLM Refinement Notes", "", ...handoff.refinement_notes.map((note) => `- ${note}`), ""]
+      : []),
     "## Sequential Waves",
     "",
     ...handoff.waves.flatMap((wave) => [
@@ -199,6 +270,30 @@ export function renderOrchestrationMarkdown(handoff: OrchestrationHandoff): stri
       "",
     ]),
   ].join("\n");
+}
+
+function validateWavePlan(handoff: OrchestrationHandoff, plan: OrchestrationWavePlan): void {
+  const expectedTaskIds = new Set(handoff.tasks.map((task) => task.id));
+  const seenTaskIds = new Set<string>();
+
+  for (const wave of plan.waves) {
+    for (const taskId of wave.task_ids) {
+      if (!expectedTaskIds.has(taskId)) {
+        throw new Error(`LLM orchestration referenced unknown task id: ${taskId}`);
+      }
+
+      if (seenTaskIds.has(taskId)) {
+        throw new Error(`LLM orchestration duplicated task id: ${taskId}`);
+      }
+
+      seenTaskIds.add(taskId);
+    }
+  }
+
+  const missingTaskIds = [...expectedTaskIds].filter((taskId) => !seenTaskIds.has(taskId));
+  if (missingTaskIds.length > 0) {
+    throw new Error(`LLM orchestration omitted task ids: ${missingTaskIds.join(", ")}`);
+  }
 }
 
 function classifyPhase(task: TaskbriefTask): OrchestrationPhase {
