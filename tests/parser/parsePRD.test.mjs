@@ -16,8 +16,8 @@ test("extracts clean tasks from V1 Scope in oss-ideas style PRD", async () => {
   assert.equal(queue.tasks[0].repo, "atomcommit");
   assert.ok(queue.tasks.length > 0, "Should extract tasks from V1 Scope");
   
-  // Should have tasks from V1 Scope (5 items in our fixture)
-  assert.equal(queue.tasks.length, 5);
+  // Should have tasks from V1 Scope plus explicit implementation plan items
+  assert.ok(queue.tasks.length >= 5);
   
   // Tasks should be clean, not scorecard fragments
   const titles = queue.tasks.map((t) => t.title);
@@ -98,5 +98,35 @@ Details here.
   const queue = parsePRD(input);
   
   assert.ok(queue);
-  assert.equal(queue.tasks.length, 0, "Should return empty task list when no V1 Scope");
+  assert.equal(queue.tasks.length, 0, "Should return empty task list when no implementation requirements are present");
+});
+
+test("extracts deterministic closing-loop tasks from agent prompt and verification sections", async () => {
+  const input = await readFile(
+    new URL("../fixtures/parser/qualitygate-prd.md", import.meta.url),
+    "utf8",
+  );
+
+  const queue = parsePRD(input);
+  assert.ok(queue);
+
+  const titles = queue.tasks.map((task) => task.title).join("\n");
+  const contexts = queue.tasks.map((task) => task.context).join("\n");
+  const allText = `${titles}\n${contexts}`;
+
+  assert.ok(queue.tasks.length > 5, "Should add closing-loop tasks beyond V1 Scope");
+  assert.match(allText, /cli command|cli run/i);
+  assert.match(allText, /package manager scripts|package\/script/i);
+  assert.match(allText, /safe checks/i);
+  assert.match(allText, /markdown and json reports/i);
+  assert.match(allText, /exit(?:s)? non-zero/i);
+  assert.match(allText, /config support/i);
+  assert.match(allText, /pass and fail fixtures|passing fixture/i);
+  assert.match(allText, /json schema tests/i);
+  assert.match(allText, /readme/i);
+  assert.match(allText, /github actions/i);
+  assert.match(allText, /final validation|release readiness/i);
+  assert.match(contexts, /Wave: 2/i, "Closing-loop implementation tasks should carry wave metadata");
+  assert.match(contexts, /Depends on: Wave 1 core implementation tasks/i);
+  assert.doesNotMatch(allText, /scorecard|CrewCmd/i, "Should not extract scorecard or CrewCmd junk");
 });

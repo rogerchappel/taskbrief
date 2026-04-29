@@ -5,6 +5,8 @@
  * targeting only the useful implementation-oriented sections:
  * - `## V1 Scope` (numbered scope items)
  * - `## Suggested Initial Commits` (commit messages -> tasks)
+ * - `## Agent Prompt` / `## Verification` explicit closing-loop requirements
+ * - `## Requirements` / `## Acceptance Criteria` checklist or bullet items
  * - Numbered task lists within example/plan sections
  * - Explicit `Task:` or `- task:` blocks if present
  *
@@ -25,10 +27,12 @@ const PRD_HEADER_PATTERNS = [
 
 const TASK_SOURCE_SECTIONS = [
   { heading: /^##\s+\d*\.?\s*V1\s+Scope\b/im, extract: extractV1Scope },
-  { heading: /^##\s+\d*\.?\s*Suggested\s+Initial\s+Commits\b/im, extract: extractCommitsAsTasks },
-  { heading: /^##\s+\d*\.?\s*Agent\s+Work\s+Plan\b/im, extract: extractAgentWorkPlan },
-  { heading: /^##\s+\d*\.?\s*Agent\s+Prompt\b/im, extract: extractAgentPromptTasks },
-  { heading: /^##\s+\d*\.?\s*Verification\b/im, extract: extractVerificationTasks },
+  { heading: /^##\s+\d*\.?\s*Suggested\s+Initial\s+Commits\b/im, extract: extractCommitsAsTasks, wave: 1 },
+  { heading: /^##\s+\d*\.?\s*Agent\s+Work\s+Plan\b/im, extract: extractAgentWorkPlan, wave: 1 },
+  { heading: /^##\s+\d*\.?\s*Requirements?\b/im, extract: extractRequirementSectionTasks, wave: 2 },
+  { heading: /^##\s+\d*\.?\s*Acceptance\s+Criteria\b/im, extract: extractRequirementSectionTasks, wave: 2 },
+  { heading: /^##\s+\d*\.?\s*Agent\s+Prompt\b/im, extract: extractAgentPromptTasks, wave: 2 },
+  { heading: /^##\s+\d*\.?\s*Verification\b/im, extract: extractVerificationTasks, wave: 3 },
 ];
 
 const NON_TASK_SECTIONS = [
@@ -72,18 +76,18 @@ export function parsePRD(input, options = {}) {
   const repository = inferRepositoryName(normalized);
   const taskCandidates = [];
 
-  for (const { heading, extract } of TASK_SOURCE_SECTIONS) {
-    const matches = extract(normalized, heading);
+  for (const { heading, extract, wave } of TASK_SOURCE_SECTIONS) {
+    const matches = extract(normalized, heading).map((candidate) => asTaskCandidate(candidate, wave));
     taskCandidates.push(...matches);
   }
 
   const seen = new Set();
   const uniqueTasks = [];
-  for (const text of taskCandidates) {
-    const key = text.toLowerCase().replace(/\s+/g, " ").trim();
+  for (const candidate of taskCandidates) {
+    const key = requirementKey(candidate.text);
     if (key && !seen.has(key)) {
       seen.add(key);
-      uniqueTasks.push(text);
+      uniqueTasks.push(candidate);
     }
   }
 
@@ -96,9 +100,17 @@ export function parsePRD(input, options = {}) {
     };
   }
 
-  const tasks = uniqueTasks.map((text, index) =>
-    normalizeTask({ text, repo: repository }, index),
-  );
+  const tasks = uniqueTasks.map((candidate, index) => {
+    const dependsOn = dependencyForWave(candidate.wave);
+    const context = [
+      `Wave: ${candidate.wave}`,
+      `Depends on: ${dependsOn}`,
+      "",
+      `Requirement: ${candidate.text}`,
+    ].join("\n");
+
+    return normalizeTask({ text: candidate.text, repo: repository, context }, index);
+  });
 
   return {
     version: "0.1",
@@ -118,6 +130,21 @@ function inferRepositoryName(text) {
     .toLowerCase()
     .replace(/[^a-z0-9._-]+/g, "-")
     .replace(/^-+|-+$/g, "") || "unknown";
+}
+
+function asTaskCandidate(candidate, wave = 1) {
+  if (typeof candidate === "string") return { text: candidate, wave };
+  return { text: candidate.text, wave: candidate.wave ?? wave };
+}
+
+function requirementKey(text) {
+  return cleanRequirement(text).toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+function dependencyForWave(wave) {
+  if (wave <= 1) return "None";
+  if (wave === 2) return "Wave 1 core implementation tasks";
+  return "Wave 1 core implementation tasks and Wave 2 closing-loop requirements";
 }
 
 function extractSectionContent(text, headingRegex) {
@@ -172,8 +199,8 @@ function extractV1Scope(text) {
   return tasks;
 }
 
-function extractCommitsAsTasks(text) {
-  const content = extractSectionContent(text, /^##\s+Suggested\s+Initial\s+Commits\b/im);
+function extractCommitsAsTasks(text, headingRegex = /^##\s+\d*\.?\s*Suggested\s+Initial\s+Commits\b/im) {
+  const content = extractSectionContent(text, headingRegex);
   if (!content) return [];
 
   const tasks = [];
@@ -192,8 +219,8 @@ function extractCommitsAsTasks(text) {
   return tasks;
 }
 
-function extractAgentWorkPlan(text) {
-  const content = extractSectionContent(text, /^##\s+Agent\s+Work\s+Plan\b/im);
+function extractAgentWorkPlan(text, headingRegex = /^##\s+\d*\.?\s*Agent\s+Work\s+Plan\b/im) {
+  const content = extractSectionContent(text, headingRegex);
   if (!content) return [];
 
   const tasks = [];
@@ -217,22 +244,78 @@ function extractAgentWorkPlan(text) {
   return tasks;
 }
 
-function extractAgentPromptTasks(text) {
-  const content = extractSectionContent(text, /^##\s+Agent\s+Prompt\b/im);
+function extractRequirementSectionTasks(text, headingRegex) {
+  const content = extractSectionContent(text, headingRegex);
   if (!content) return [];
 
-  // Agent Prompt sections typically contain skill/instruction text, not executable tasks
-  // Skip this unless it contains explicit task lists
-  return [];
+  return extractExplicitRequirements(content);
 }
 
-function extractVerificationTasks(text) {
-  const content = extractSectionContent(text, /^##\s+Verification\b/im);
+function extractAgentPromptTasks(text, headingRegex = /^##\s+\d*\.?\s*Agent\s+Prompt\b/im) {
+  const content = extractSectionContent(text, headingRegex);
   if (!content) return [];
 
-  // Verification sections list commands/checks, not development tasks
-  // Only extract if explicitly labeled as tasks
-  return [];
+  return extractExplicitRequirements(content);
+}
+
+function extractVerificationTasks(text, headingRegex = /^##\s+\d*\.?\s*Verification\b/im) {
+  const content = extractSectionContent(text, headingRegex);
+  if (!content) return [];
+
+  return extractExplicitRequirements(content, { includeFinalValidation: true });
+}
+
+function extractExplicitRequirements(content, options = {}) {
+  const tasks = [];
+  const lines = content.split("\n");
+
+  for (const line of lines) {
+    const item = line.match(/^\s*(?:[-*]|\d+\.)\s+(?:\[[ xX-]\]\s*)?(.+)$/);
+    if (item) addRequirement(tasks, item[1]);
+  }
+
+  for (const sentence of splitSentences(content)) {
+    const includeMatch = sentence.match(/\binclude\s+(.+)$/i);
+    if (includeMatch) addRequirement(tasks, includeMatch[1]);
+    else if (looksLikeClosingLoopRequirement(sentence, options)) addRequirement(tasks, sentence);
+  }
+
+  return tasks;
+}
+
+function splitSentences(content) {
+  return content
+    .replace(/`([^`]+)`/g, "$1")
+    .split(/(?:\n+|(?<=[.!?])\s+)/)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
+}
+
+function addRequirement(tasks, value) {
+  const cleaned = cleanRequirement(value);
+  if (cleaned && looksLikeTaskRequirement(cleaned)) tasks.push(cleaned);
+}
+
+function cleanRequirement(value) {
+  return String(value ?? "")
+    .replace(/^\s*(?:[-*]|\d+\.)\s+(?:\[[ xX-]\]\s*)?/, "")
+    .replace(/^\s*(?:task|requirement|acceptance criterion)\s*:\s*/i, "")
+    .replace(/\s+and\s+CrewCmd\s+integration\b/gi, "")
+    .replace(/\s+/g, " ")
+    .replace(/^[,.;:\-\s]+|[,.;:\-\s]+$/g, "")
+    .trim();
+}
+
+function looksLikeTaskRequirement(text) {
+  if (isBoilerplate(text)) return false;
+  if (/^(do not|don['’]t|skip|avoid|non-goal)\b/i.test(text)) return false;
+  if (/\b(scorecard|scoring)\b/i.test(text)) return false;
+  return looksLikeClosingLoopRequirement(text);
+}
+
+function looksLikeClosingLoopRequirement(text, options = {}) {
+  return /\b(cli|command|package(?: manager)?|script|safe checks?|checks?\b|reports?|exit\s+non[- ]?zero|config(?:uration)?|fixtures?|pass(?:ing)? fixture|fail(?:ing)? fixture|tests?|json schema|schema tests?|readme|docs?|documentation|github actions?|workflow|example|validation|release readiness|readiness)\b/i.test(text) ||
+    (options.includeFinalValidation && /\bfinal\b.*\b(validate|validation|readiness|release)\b/i.test(text));
 }
 
 function isBoilerplate(text) {
