@@ -18,7 +18,7 @@
  * - Example outputs that are just illustrative (not prescriptive tasks)
  */
 
-import { normalizeTask } from "./normalizeTask.js";
+import { buildTaskQueue } from "./taskQueue.js";
 
 const PRD_HEADER_PATTERNS = [
   /^#\s+PRD[:\s]/im,
@@ -100,7 +100,7 @@ export function parsePRD(input, options = {}) {
     };
   }
 
-  const tasks = uniqueTasks.map((candidate, index) => {
+  const tasks = uniqueTasks.map((candidate) => {
     const dependsOn = dependencyForWave(candidate.wave);
     const context = [
       `Wave: ${candidate.wave}`,
@@ -109,15 +109,10 @@ export function parsePRD(input, options = {}) {
       `Requirement: ${candidate.text}`,
     ].join("\n");
 
-    return normalizeTask({ text: candidate.text, repo: repository, context }, index);
+    return { text: candidate.text, repo: repository, context };
   });
 
-  return {
-    version: "0.1",
-    source: "taskbrief",
-    workspace,
-    tasks,
-  };
+  return buildTaskQueue(tasks, { workspace });
 }
 
 function inferRepositoryName(text) {

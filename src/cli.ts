@@ -4,6 +4,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { stdin as processStdin, stdout as processStdout } from "node:process";
 
 import { getRuntimeInfo } from "./index.js";
+import { parseWithLlm } from "./llm/index.js";
 // @ts-expect-error Existing JavaScript modules do not publish local declarations yet.
 import { exportCrewCmd } from "./crewcmd/index.js";
 // @ts-expect-error Existing JavaScript modules do not publish local declarations yet.
@@ -27,6 +28,8 @@ interface ParseOptions {
   output?: string;
   type?: string;
   llm?: boolean;
+  provider?: string;
+  model?: string;
 }
 
 interface NewOptions {
@@ -59,11 +62,10 @@ export function createCli(io: CliIo = {}): Command {
     .option("--crewcmd", "Export CrewCMD-compatible task queue.")
     .option("--output <path>", "Write output to a file instead of stdout.")
     .option("--type <type>", "Input type metadata. Accepted values: text, transcript.", "text")
-    .option("--llm", "Reserved for explicit LLM-backed parsing.")
+    .option("--llm", "Use explicit LLM-backed parsing for BYO or messy PRDs.")
+    .option("--provider <provider>", "LLM provider for --llm mode (currently: openai).")
+    .option("--model <model>", "Override the LLM model used with --llm mode.")
     .action(async (file: string | undefined, options: ParseOptions, command: Command) => {
-      if (options.llm) {
-        throw new Error("LLM parsing is not wired yet. Run without --llm for deterministic local parsing.");
-      }
       validateInputType(options.type);
       const format =
         options.crewcmd && command.getOptionValueSource("format") === "default"
@@ -72,9 +74,14 @@ export function createCli(io: CliIo = {}): Command {
       const input = file ? await readFile(file, "utf8") : await readStream(stdin);
       const workspace = options.workspace ? loadWorkspaceConfig(options.workspace).workspace : undefined;
       
-      // Try PRD parsing first (deterministic, section-based extraction)
-      const prdQueue = parsePRD(input, { workspace });
-      const queue = prdQueue ?? parseBrainDump(input, { workspace });
+      const queue = options.llm
+        ? await parseWithLlm(input, {
+            workspace,
+            provider: validateLlmProvider(options.provider),
+            model: options.model,
+            inputSource: file ? { type: "file", path: file } : { type: "stdin" },
+          })
+        : (parsePRD(input, { workspace }) ?? parseBrainDump(input, { workspace }));
       const exportQueue = options.crewcmd ? exportCrewCmd(queue, { workspace: queue.workspace }) : queue;
 
       await writeRenderedOutput(renderQueue(exportQueue, format), options.output, stdout);
@@ -139,6 +146,14 @@ function validateInputType(value: string | undefined): void {
 function validateRisk(value: string | undefined): "low" | "medium" | "high" {
   if (value === "low" || value === "medium" || value === "high") return value;
   throw new Error(`Invalid risk "${value}". Expected one of: low, medium, high.`);
+}
+
+function validateLlmProvider(value: string | undefined): string {
+  if (typeof value !== "string" || value.trim().length === 0) {
+    throw new Error("LLM mode requires --provider. Currently supported: openai.");
+  }
+
+  return value.trim();
 }
 
 function renderQueue(queue: unknown, format: OutputFormat): string {

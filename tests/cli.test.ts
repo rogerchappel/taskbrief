@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { access, mkdtemp, readFile, rm } from "node:fs/promises";
 import { Readable, Writable } from "node:stream";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -7,6 +7,12 @@ import { join } from "node:path";
 import { createCli } from "../src/cli.js";
 
 describe("taskbrief CLI", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
   it("exposes the package name in help output", () => {
     const help = createCli().helpInformation();
 
@@ -96,10 +102,150 @@ describe("taskbrief CLI", () => {
     });
   });
 
-  it("fails clearly when parse requests LLM mode", async () => {
-    await expect(runCli(["parse", "--llm"], { stdin: "branchbrief docs" })).rejects.toThrow(
-      "LLM parsing is not wired yet.",
+  it("accepts schema-valid LLM output and preserves provenance in context", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "sk-test");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  tasks: [
+                    {
+                      title: "Extract taskbrief tasks from messy PRD",
+                      repo: "taskbrief",
+                      type: "docs",
+                      risk: "low",
+                      objective: "Turn the PRD into a validated Taskbrief queue.",
+                      context: "Messy BYO PRD input with missing structure.",
+                      allowed_paths: ["README.md", "docs/**"],
+                      forbidden_paths: [".env*", "secrets/**"],
+                      verification: ["npm test"],
+                      stop_conditions: ["credentials required"],
+                      expected_commits: ["docs: extract taskbrief tasks from messy prd"],
+                      review_pack_required: true,
+                      human_decision_needed: [],
+                      agent_prompt: "You are working on taskbrief.",
+                    },
+                  ],
+                }),
+              },
+            },
+          ],
+        }),
+      }),
     );
+
+    const output = await runCli(["parse", "--llm", "--provider", "openai", "--format", "json"], {
+      stdin: "Please extract tasks from this messy PRD.",
+    });
+    const parsed = JSON.parse(output);
+
+    expect(parsed.tasks[0].context).toContain("Source: llm (openai:");
+    expect(parsed.tasks[0].repo).toBe("taskbrief");
+  });
+
+  it("fails clearly when LLM env is missing", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "");
+
+    await expect(
+      runCli(["parse", "--llm", "--provider", "openai", "--format", "json"], {
+        stdin: "branchbrief docs",
+      }),
+    ).rejects.toThrow(/openai credential is missing from OPENAI_API_KEY/);
+  });
+
+  it("fails closed when LLM returns malformed JSON", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "sk-test");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          choices: [{ message: { content: "{not-json" } }],
+        }),
+      }),
+    );
+
+    await expect(
+      runCli(["parse", "--llm", "--provider", "openai", "--format", "json"], {
+        stdin: "branchbrief docs",
+      }),
+    ).rejects.toThrow(/LLM returned malformed JSON/);
+  });
+
+  it("fails closed when LLM returns schema-invalid JSON", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "sk-test");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  tasks: [
+                    {
+                      title: "Incomplete task",
+                      repo: "taskbrief",
+                      type: "docs",
+                      risk: "medium",
+                      objective: "Missing required arrays and prompt.",
+                      context: "Missing fields",
+                      forbidden_paths: [".env*"],
+                      verification: ["npm test"],
+                      stop_conditions: [],
+                      expected_commits: [],
+                      review_pack_required: true,
+                      human_decision_needed: [],
+                      agent_prompt: "x",
+                    },
+                  ],
+                }),
+              },
+            },
+          ],
+        }),
+      }),
+    );
+
+    await expect(
+      runCli(["parse", "--llm", "--provider", "openai", "--format", "json"], {
+        stdin: "branchbrief docs",
+      }),
+    ).rejects.toThrow(/LLM output failed Taskbrief schema validation/);
+  });
+
+  it("does not write an output file when LLM parsing fails", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "sk-test");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          choices: [{ message: { content: "not-json" } }],
+        }),
+      }),
+    );
+
+    const directory = await mkdtemp(join(tmpdir(), "taskbrief-cli-"));
+    const outputPath = join(directory, "task.json");
+
+    try {
+      await expect(
+        runCli(["parse", "--llm", "--provider", "openai", "--format", "json", "--output", outputPath], {
+          stdin: "branchbrief docs",
+        }),
+      ).rejects.toThrow(/LLM returned malformed JSON/);
+
+      await expect(access(outputPath)).rejects.toThrow();
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
   });
 });
 
