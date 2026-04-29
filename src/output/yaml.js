@@ -22,7 +22,7 @@ function renderObject(object, indent) {
         return `${" ".repeat(indent)}${key}:\n${renderObject(value, indent + 2)}`;
       }
 
-      return `${" ".repeat(indent)}${key}: ${formatScalar(value)}\n`;
+      return `${" ".repeat(indent)}${key}: ${formatScalar(value, indent)}\n`;
     })
     .join("");
 }
@@ -46,13 +46,13 @@ function renderArray(array, indent) {
               return `${" ".repeat(indent + 2)}${key}:\n${renderObject(value, indent + 4)}`;
             }
 
-            return `${" ".repeat(indent + 2)}${key}: ${formatScalar(value)}\n`;
+            return `${" ".repeat(indent + 2)}${key}: ${formatScalar(value, indent + 2)}\n`;
           })
           .join("");
         return `${firstLine}${rest}`;
       }
 
-      return `${" ".repeat(indent)}- ${formatScalar(item)}\n`;
+      return `${" ".repeat(indent)}- ${formatScalar(item, indent)}\n`;
     })
     .join("");
 }
@@ -60,15 +60,18 @@ function renderArray(array, indent) {
 function formatInlineValue(value, indent) {
   if (Array.isArray(value)) return value.length === 0 ? "[]" : `\n${renderArray(value, indent)}`;
   if (isPlainObject(value)) return `\n${renderObject(value, indent)}`;
-  return formatScalar(value);
+  return formatScalar(value, indent);
 }
 
-function formatScalar(value) {
+function formatScalar(value, indent = 0) {
   if (typeof value === "boolean") return value ? "true" : "false";
   if (typeof value === "number") return String(value);
   if (value === null) return "null";
   const string = String(value);
-  if (string.includes("\n")) return `|\n${string.split("\n").map((line) => `  ${line}`).join("\n")}`;
+  if (string.includes("\n")) {
+    const blockIndent = " ".repeat(indent + 2);
+    return `|\n${string.split("\n").map((line) => `${blockIndent}${line}`).join("\n")}`;
+  }
   return JSON.stringify(string);
 }
 

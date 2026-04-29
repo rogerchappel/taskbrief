@@ -1101,14 +1101,15 @@ docs/examples.md
 
 Checklist state reflects the current merged `main` branch, not unmerged
 implementation PRs. A checked item means the capability exists in the repository
-at module, docs, skill, or CLI level as applicable. End-user CLI parsing remains
-incomplete until `taskbrief parse` is wired into the CLI.
+at module, docs, skill, or CLI level as applicable. Deterministic end-user CLI
+parsing is wired; LLM-backed parsing remains reserved behind an explicit flag and
+is not implemented yet.
 
 V1 is complete when:
 
 - [x] CLI exists
-- [ ] `taskbrief parse <file>` works
-- [ ] stdin input works
+- [x] `taskbrief parse <file>` works
+- [x] stdin input works
 - [x] workspace config loads
 - [x] repo assignment works when repo names are clear
 - [x] unclear repos are marked uncertain
@@ -1118,7 +1119,7 @@ V1 is complete when:
 - [x] YAML output works
 - [x] JSON output works
 - [x] CrewCMD export works
-- [ ] LLM mode is explicit
+- [x] LLM mode is explicit
 - [x] no LLM call happens by default
 - [x] high-risk tasks require human approval
 - [x] stop conditions are included

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { test } from "vitest";
+import YAML from "yaml";
 
 import { exportCrewCmd } from "../../src/crewcmd/index.js";
 import { parseBrainDump } from "../../src/parser/index.js";
@@ -27,6 +28,12 @@ test("renders stable json queue output", () => {
   assert.deepEqual(Object.keys(parsed.tasks[0]).slice(0, 5), ["id", "title", "repo", "branch", "type"]);
 });
 
+test("json queue output round-trips existing task examples", async () => {
+  const expected = JSON.parse(await readFile(new URL("../../examples/tasks.json", import.meta.url), "utf8"));
+
+  assert.deepEqual(JSON.parse(renderJson(expected)), expected);
+});
+
 test("renders yaml queue output without external dependencies", () => {
   const queue = parseBrainDump("product-videogen mobile testing on iPhone and tablet", {
     workspace: "rogerchappel-oss",
@@ -37,6 +44,29 @@ test("renders yaml queue output without external dependencies", () => {
   assert.match(yaml, /workspace: "rogerchappel-oss"/);
   assert.match(yaml, /repo: "product-videogen"/);
   assert.match(yaml, /- "manual iPhone smoke test"/);
+});
+
+test("yaml queue output round-trips multiline fields", async () => {
+  const expected = JSON.parse(await readFile(new URL("../../examples/tasks.json", import.meta.url), "utf8"));
+  const yaml = renderYaml(expected);
+  const parsed = YAML.parse(yaml);
+
+  assert.deepEqual(parsed, expected);
+});
+
+test("parse output creates deterministic unique ids and branches for duplicates", () => {
+  const queue = parseBrainDump("write docs for taskbrief and write docs for taskbrief", {
+    workspace: "rogerchappel-oss",
+  });
+
+  assert.deepEqual(
+    queue.tasks.map((task) => task.id),
+    ["taskbrief-docs-for-taskbrief", "taskbrief-docs-for-taskbrief-2"],
+  );
+  assert.deepEqual(
+    queue.tasks.map((task) => task.branch),
+    ["agent/docs-for-taskbrief", "agent/docs-for-taskbrief-2"],
+  );
 });
 
 test("exports CrewCMD camelCase queue with human approval gating", async () => {
