@@ -38,5 +38,3 @@ export type {
   WorkspaceConfig,
   WorkspaceRepoConfig,
 } from "./types.js";
-
-export * as voicepath from "./voicepath/index.js";
