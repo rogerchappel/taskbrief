@@ -25,6 +25,7 @@ export const { renderJson, renderMarkdown, renderTaskMarkdown, renderYaml, toYam
 export const { classifyRisk, inferRepo, inferType, normalizeTask, parseBrainDump, splitTasks, slugify } = parser;
 export { loadWorkspaceConfig, parseWorkspaceConfig } from "./workspace/loadWorkspace.js";
 export { listRepoAliases, resolveRepo } from "./workspace/resolveRepo.js";
+export { validateWave1Policy, wave1TurnTakingPolicy, wave1TurnTransitions } from "./voice/turnTaking.js";
 export type {
   RepoResolution,
   RepoResolutionMatch,
@@ -38,3 +39,16 @@ export type {
   WorkspaceConfig,
   WorkspaceRepoConfig,
 } from "./types.js";
+export type {
+  BargeInPolicy,
+  EchoLikelihood,
+  SealedUserTurn,
+  TurnEvent,
+  TurnInputMode,
+  TurnState,
+  TurnTakingPolicyContract,
+  TurnThresholdPolicy,
+  TurnTimingPolicy,
+  TurnTransition,
+  VoicePathSignal,
+} from "./voice/turnTaking.js";
