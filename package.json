@@ -24,7 +24,9 @@
     "cli": "tsx src/cli.ts",
     "dev": "tsx src/cli.ts",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "smoke": "npm run build && node dist/cli.js --help && node dist/cli.js --version",
+    "release:check": "npm run typecheck && npm test && npm run smoke && npm pack --dry-run"
   },
   "keywords": [
     "agents",
