@@ -46,7 +46,7 @@ jobs:
             git log --oneline "$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo HEAD~20)..HEAD" >> RELEASE_NOTES.md
             cat RELEASE_NOTES.md
           fi
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           body_path: RELEASE_NOTES.md
           files: '*.tgz'
