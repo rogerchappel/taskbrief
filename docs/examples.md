@@ -23,6 +23,9 @@ Voice transcription happens upstream. `taskbrief` consumes plain text and turns
 it into bounded task briefs with repo, branch, risk, allowed paths, forbidden
 paths, verification, stop conditions, and review-pack requirements.
 
+For a fuller local recipe that also emits orchestration handoff artifacts, see
+[Voice Dump to Orchestration Handoff](tutorials/voice-dump-to-orchestration.md).
+
 ## Parse a Cross-Repo Plan
 
 ```bash
