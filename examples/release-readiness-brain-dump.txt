@@ -1,0 +1,12 @@
+Need branchbrief ready for its first npm release.
+
+Tasks:
+- audit package metadata, bin entry, files list, and README install commands
+- add release checklist notes for npm dry-run only
+- verify npm test, npm run build, and npm pack --dry-run
+- do not publish, request tokens, or change production infrastructure
+
+Also prep docs deployment for review:
+- confirm Cloudflare Pages docs instructions are current
+- collect any missing environment variables as reviewer notes
+- stop if deployment credentials are needed
