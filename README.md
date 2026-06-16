@@ -173,6 +173,17 @@ with a non-zero exit before `TASKS.md`, `ORCHESTRATION.md`, or
 Use this output for StackForge or an external orchestrator instead of dispatching
 every task at once.
 
+For a fixture-backed local demo that creates all three orchestration artifacts
+and verifies their basic shape, run:
+
+```bash
+bash examples/orchestration-demo.sh
+```
+
+The demo uses `examples/voice-dump.txt` and `examples/repos.yaml`, writes to a
+temporary directory, and checks that `TASKS.md`, `ORCHESTRATION.md`, and
+`orchestration.json` were produced.
+
 ## CrewCMD Export
 
 The module-level CrewCMD exporter produces CrewCMD-compatible queue objects.
