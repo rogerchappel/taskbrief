@@ -45,12 +45,11 @@ jobs:
             test -s "$file"
           done < markdown-files.txt
 
-      - name: Print docs customization TODO
+      - name: Validate packaged docs surface
         run: |
           set -euo pipefail
 
-          if [ -f package.json ]; then
-            echo "Add docs build verification here when the repository has a docs toolchain."
-          else
-            echo "No package.json found; docs workflow is limited to markdown hygiene."
-          fi
+          test -f package.json
+          grep -q '"docs"' package.json
+          grep -q '"examples"' package.json
+          grep -q 'docs/PRD.md' README.md
