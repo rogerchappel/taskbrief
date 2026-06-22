@@ -1,0 +1,12 @@
+GitHub issue: release docs are confusing for branchbrief.
+
+Please check the README install command, the bin name in package.json, the
+changelog entry for the next patch, and the release process doc. Keep it docs
+and metadata only. Do not publish to npm, do not touch credentials, and stop if
+package ownership or token access is required.
+
+Verification should include npm run typecheck, npm test, npm run build, and a
+package smoke check if the repo has one.
+
+Also draft follow-up notes for the docs site deployment, but keep production
+deploys and Cloudflare secrets human-gated.

@@ -86,6 +86,19 @@ taskbrief parse brain-dump.txt --crewcmd --output crewcmd-tasks.json
 taskbrief parse docs/PRD.md --output docs/TASKS.md --orchestration
 ```
 
+Runnable fixture demos:
+
+```bash
+npm run build
+bash examples/release-readiness-demo.sh
+bash examples/github-issue-triage-demo.sh
+```
+
+The GitHub issue triage demo parses `examples/github-issue-triage.txt`, writes
+`TASKS.md`, `ORCHESTRATION.md`, and `orchestration.json`, then checks that the
+handoff preserved the branchbrief repo context and publish-related stop
+condition.
+
 stdin is supported when no input file is provided:
 
 ```bash

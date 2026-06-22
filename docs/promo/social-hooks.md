@@ -17,3 +17,14 @@ terminal demo that runs `taskbrief parse` against the checked-in examples.
 Open with `examples/voice-dump.txt`, then run the tutorial command from
 `docs/tutorials/voice-dump-to-orchestration.md`. Show the generated task queue
 and call out one blocked/human-gated item so the safety model is visible.
+
+## Issue Triage Clip
+
+```bash
+npm run build
+bash examples/github-issue-triage-demo.sh
+```
+
+Use the checked-in GitHub issue fixture to show normal maintainer prose becoming
+`TASKS.md`, `ORCHESTRATION.md`, and `orchestration.json` without publishing,
+deploying, or dispatching agents.
