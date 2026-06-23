@@ -92,12 +92,16 @@ Runnable fixture demos:
 npm run build
 bash examples/release-readiness-demo.sh
 bash examples/github-issue-triage-demo.sh
+bash examples/cross-repo-promo-demo.sh
 ```
 
 The GitHub issue triage demo parses `examples/github-issue-triage.txt`, writes
 `TASKS.md`, `ORCHESTRATION.md`, and `orchestration.json`, then checks that the
 handoff preserved the branchbrief repo context and publish-related stop
 condition.
+
+The cross-repo promo demo parses `examples/cross-repo-plan.txt` and writes the
+same task and orchestration artifacts for a broader maintainer planning note.
 
 stdin is supported when no input file is provided:
 
