@@ -11,9 +11,32 @@ terminal demo that runs `taskbrief parse` against the checked-in examples.
   with provider and credential disclosure.
 - Good demo arc: messy note in, `TASKS.md`, `ORCHESTRATION.md`, and
   `orchestration.json` out.
+- Cross-repo planning demo: `bash examples/cross-repo-promo-demo.sh` turns a
+  checked-in maintainer note into reviewable task and orchestration artifacts.
 
 ## Video Brief
 
 Open with `examples/voice-dump.txt`, then run the tutorial command from
 `docs/tutorials/voice-dump-to-orchestration.md`. Show the generated task queue
 and call out one blocked/human-gated item so the safety model is visible.
+
+## Issue Triage Clip
+
+```bash
+npm run build
+bash examples/github-issue-triage-demo.sh
+```
+
+Use the checked-in GitHub issue fixture to show normal maintainer prose becoming
+`TASKS.md`, `ORCHESTRATION.md`, and `orchestration.json` without publishing,
+deploying, or dispatching agents.
+
+## Cross-Repo Clip
+
+```bash
+npm run build
+bash examples/cross-repo-promo-demo.sh
+```
+
+Use this when the story is broader than one issue: a maintainer note becomes a
+bounded queue across repos, with no agent dispatch or publishing side effects.

@@ -94,6 +94,23 @@ For a runnable issue-triage workflow, see
 bash examples/github-issue-triage-demo.sh
 ```
 
+Runnable fixture demos:
+
+```bash
+npm run build
+bash examples/release-readiness-demo.sh
+bash examples/github-issue-triage-demo.sh
+bash examples/cross-repo-promo-demo.sh
+```
+
+The GitHub issue triage demo parses `examples/github-issue-triage.txt`, writes
+`TASKS.md`, `ORCHESTRATION.md`, and `orchestration.json`, then checks that the
+handoff preserved the branchbrief repo context and publish-related stop
+condition.
+
+The cross-repo promo demo parses `examples/cross-repo-plan.txt` and writes the
+same task and orchestration artifacts for a broader maintainer planning note.
+
 stdin is supported when no input file is provided:
 
 ```bash
@@ -180,6 +197,17 @@ with a non-zero exit before `TASKS.md`, `ORCHESTRATION.md`, or
 
 Use this output for StackForge or an external orchestrator instead of dispatching
 every task at once.
+
+For a fixture-backed local demo that creates all three orchestration artifacts
+and verifies their basic shape, run:
+
+```bash
+bash examples/orchestration-demo.sh
+```
+
+The demo uses `examples/voice-dump.txt` and `examples/repos.yaml`, writes to a
+temporary directory, and checks that `TASKS.md`, `ORCHESTRATION.md`, and
+`orchestration.json` were produced.
 
 ## CrewCMD Export
 
