@@ -83,7 +83,15 @@ taskbrief parse brain-dump.txt --output tasks.md
 taskbrief parse brain-dump.txt --format yaml --output tasks.yaml
 taskbrief parse brain-dump.txt --format json --output tasks.json
 taskbrief parse brain-dump.txt --crewcmd --output crewcmd-tasks.json
+taskbrief parse examples/github-issue-triage.txt --crewcmd
 taskbrief parse docs/PRD.md --output docs/TASKS.md --orchestration
+```
+
+For a runnable issue-triage workflow, see
+[GitHub Issue Triage to CrewCMD](docs/tutorials/github-issue-triage-to-crewcmd.md):
+
+```bash
+bash examples/github-issue-triage-demo.sh
 ```
 
 Runnable fixture demos:
