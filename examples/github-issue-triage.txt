@@ -1,0 +1,17 @@
+GitHub issue triage:
+
+Repo: httpstubby
+The README quickstart mentions the happy path, but users keep asking how to
+model failed payments in local integration tests. Add a docs tutorial that uses
+the existing checkout fixtures, include a short curl transcript, and verify the
+demo script still passes.
+
+Repo: docfresh
+The project needs a concise release note draft for maintainers who want to show
+README drift detection in CI. Keep it docs-only, mention that smoke commands
+only run from explicitly marked fenced blocks, and run npm run smoke.
+
+Repo: repoctx
+Create a short local workspace demo for two repositories. It should generate a
+workspace YAML file, run validate/list/inspect, and capture the command sequence
+for a future screencast.
