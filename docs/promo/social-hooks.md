@@ -40,3 +40,15 @@ bash examples/cross-repo-promo-demo.sh
 
 Use this when the story is broader than one issue: a maintainer note becomes a
 bounded queue across repos, with no agent dispatch or publishing side effects.
+
+## Release Review Pack Clip
+
+```bash
+npm run build
+bash examples/release-review-pack-demo.sh
+```
+
+Use this when the story is release readiness before dispatch: the checked-in
+release note becomes `TASKS.md`, `ORCHESTRATION.md`, `orchestration.json`, and
+CrewCMD JSON while keeping publish and deployment boundaries blocked for human
+approval. See [release review pack hooks](release-review-pack-hooks.md).
