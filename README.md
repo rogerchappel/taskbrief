@@ -111,6 +111,15 @@ condition.
 The cross-repo promo demo parses `examples/cross-repo-plan.txt` and writes the
 same task and orchestration artifacts for a broader maintainer planning note.
 
+For a release review pack that writes `TASKS.md`, `ORCHESTRATION.md`,
+`orchestration.json`, and CrewCMD JSON from the release-readiness fixture:
+
+```bash
+bash examples/release-review-pack-demo.sh
+```
+
+See [Release Review Pack Demo](docs/tutorials/release-review-pack.md).
+
 stdin is supported when no input file is provided:
 
 ```bash
