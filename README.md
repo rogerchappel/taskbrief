@@ -120,6 +120,18 @@ bash examples/release-review-pack-demo.sh
 
 See [Release Review Pack Demo](docs/tutorials/release-review-pack.md).
 
+## Verification
+
+Run the local gate before opening a PR:
+
+```bash
+npm test
+npm run release:check
+```
+
+`release:check` runs the typecheck, tests, CLI smoke, package dry-run, and
+release-readiness validation that exercise the documented examples above.
+
 stdin is supported when no input file is provided:
 
 ```bash
