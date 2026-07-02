@@ -50,3 +50,15 @@ bash examples/stdin-promo-demo.sh
 Use this for a compact "copy/paste plan to structured queue" clip. The demo
 pipes a checked-in planning note through `taskbrief parse`, writes JSON to
 `/tmp/taskbrief-stdin-tasks.json`, and verifies that tasks were produced.
+
+## Release Review Pack Clip
+
+```bash
+npm run build
+bash examples/release-review-pack-demo.sh
+```
+
+Use this when the story is release readiness before dispatch: the checked-in
+release note becomes `TASKS.md`, `ORCHESTRATION.md`, `orchestration.json`, and
+CrewCMD JSON while keeping publish and deployment boundaries blocked for human
+approval. See [release review pack hooks](release-review-pack-hooks.md).
