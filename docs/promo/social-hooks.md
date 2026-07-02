@@ -41,6 +41,16 @@ bash examples/cross-repo-promo-demo.sh
 Use this when the story is broader than one issue: a maintainer note becomes a
 bounded queue across repos, with no agent dispatch or publishing side effects.
 
+## Stdin JSON Clip
+
+```bash
+bash examples/stdin-promo-demo.sh
+```
+
+Use this for a compact "copy/paste plan to structured queue" clip. The demo
+pipes a checked-in planning note through `taskbrief parse`, writes JSON to
+`/tmp/taskbrief-stdin-tasks.json`, and verifies that tasks were produced.
+
 ## Release Review Pack Clip
 
 ```bash
