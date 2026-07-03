@@ -116,6 +116,15 @@ The stdin promo demo pipes `examples/cross-repo-plan.txt` through the parser,
 uses `examples/repos.yaml` for workspace context, and verifies a JSON task queue
 at `/tmp/taskbrief-stdin-tasks.json`.
 
+The YAML queue demo parses the same cross-repo planning note with workspace
+context and writes a reviewable YAML task queue:
+
+```bash
+bash examples/yaml-queue-demo.sh
+```
+
+See [YAML Queue Export Demo](docs/tutorials/yaml-queue-export.md).
+
 For a release review pack that writes `TASKS.md`, `ORCHESTRATION.md`,
 `orchestration.json`, and CrewCMD JSON from the release-readiness fixture:
 
