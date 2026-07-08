@@ -94,6 +94,10 @@ For a runnable issue-triage workflow, see
 bash examples/github-issue-triage-demo.sh
 ```
 
+For the shortest deterministic pipe workflow, see
+[Stdin triage to JSON](docs/tutorials/stdin-triage-to-json.md). For public
+clip planning, use the grounded [demo shot list](docs/promo/demo-shot-list.md).
+
 Runnable fixture demos:
 
 ```bash
