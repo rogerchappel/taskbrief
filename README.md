@@ -125,6 +125,16 @@ The on-call hotfix demo parses `examples/oncall-hotfix-dump.txt` into a hotfix
 task plus a follow-up documentation task while preserving credential, ownership,
 and publish stop conditions.
 
+To demonstrate the explicit LLM guardrail without using a real provider key:
+
+```bash
+npm run build
+bash examples/llm-fail-closed-demo.sh
+```
+
+See [LLM Fail-Closed Demo](docs/tutorials/llm-fail-closed.md) and
+[LLM Fail-Closed Hooks](docs/promo/llm-fail-closed-hooks.md).
+
 The YAML queue demo parses the same cross-repo planning note with workspace
 context and writes a reviewable YAML task queue:
 
