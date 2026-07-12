@@ -125,6 +125,17 @@ The on-call hotfix demo parses `examples/oncall-hotfix-dump.txt` into a hotfix
 task plus a follow-up documentation task while preserving credential, ownership,
 and publish stop conditions.
 
+The support intake demo parses `examples/support-intake-dump.txt` into a
+DocFresh-flavored README drift task plus a separate promotion follow-up while
+preserving private-path and publish stop conditions:
+
+```bash
+bash examples/support-intake-demo.sh
+```
+
+See [Support Intake Queue](docs/tutorials/support-intake-queue.md) and
+[Support Intake Social Hooks](docs/promo/support-intake-hooks.md).
+
 To demonstrate the explicit LLM guardrail without using a real provider key:
 
 ```bash
