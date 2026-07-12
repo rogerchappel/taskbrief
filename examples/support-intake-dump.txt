@@ -1,0 +1,32 @@
+Repo: docfresh
+Branch: agent/support-readme-drift
+
+Support keeps seeing confusion when a README references a package script that no
+longer exists. Add a failing fixture that shows the stale package-script case,
+then update the docs so maintainers know how to run the check before a release.
+
+Allowed paths:
+- fixtures/**
+- docs/**
+- README.md
+- src/**
+- tests/**
+
+Forbidden paths:
+- dist/**
+- .env*
+- npm-debug.log
+
+Expected commit:
+- docs: show package-script drift in release checks
+
+Verification:
+- npm test
+- npm run smoke
+- bash demo/package-script-reference-sweep.sh
+
+Stop if the report includes a private repository path, if the fixture needs a
+real package token, or if the change would require publishing the package.
+
+Also create a follow-up promo note for DocFresh that explains the stale-script
+failure path without claiming CI coverage.
