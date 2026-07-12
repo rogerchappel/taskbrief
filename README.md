@@ -106,6 +106,7 @@ bash examples/release-readiness-demo.sh
 bash examples/github-issue-triage-demo.sh
 bash examples/cross-repo-promo-demo.sh
 bash examples/stdin-promo-demo.sh
+bash examples/oncall-hotfix-demo.sh
 ```
 
 The GitHub issue triage demo parses `examples/github-issue-triage.txt`, writes
@@ -119,6 +120,10 @@ same task and orchestration artifacts for a broader maintainer planning note.
 The stdin promo demo pipes `examples/cross-repo-plan.txt` through the parser,
 uses `examples/repos.yaml` for workspace context, and verifies a JSON task queue
 at `/tmp/taskbrief-stdin-tasks.json`.
+
+The on-call hotfix demo parses `examples/oncall-hotfix-dump.txt` into a hotfix
+task plus a follow-up documentation task while preserving credential, ownership,
+and publish stop conditions.
 
 The YAML queue demo parses the same cross-repo planning note with workspace
 context and writes a reviewable YAML task queue:
