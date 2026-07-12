@@ -1,0 +1,30 @@
+Repo: logveil
+Branch: agent/oncall-redaction-hotfix
+
+We had an on-call report that LogVeil missed a new token-shaped value in a
+terminal capture. Please add a fixture for the token shape, update the
+redaction rule, and document the limitation in the README.
+
+Allowed paths:
+- src/rules.ts
+- tests/**
+- examples/**
+- README.md
+
+Forbidden paths:
+- .env*
+- secrets/**
+- dist/**
+
+Expected commit:
+- fix(redaction): cover support token captures
+
+Verification:
+- npm test
+- npm run smoke
+
+Stop if the report contains a real customer token, if a fixture needs a live
+credential, or if the change would require publishing a package.
+
+Also open a follow-up docs task for docfresh to add the new LogVeil fixture to
+its README smoke examples after the LogVeil fix merges.
