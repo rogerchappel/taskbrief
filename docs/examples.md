@@ -26,6 +26,16 @@ paths, verification, stop conditions, and review-pack requirements.
 For a fuller local recipe that also emits orchestration handoff artifacts, see
 [Voice Dump to Orchestration Handoff](tutorials/voice-dump-to-orchestration.md).
 
+For a copy-ready review pack demo:
+
+```bash
+npm run build
+bash examples/voice-dump-review-pack-demo.sh
+```
+
+The script renders both Markdown tasks and CrewCMD JSON from
+`examples/voice-dump.txt` using `examples/repos.yaml`.
+
 ## Parse a Cross-Repo Plan
 
 ```bash
@@ -105,6 +115,7 @@ Network: yes
 ## Included Example Files
 
 - [voice-dump.txt](../examples/voice-dump.txt)
+- [voice-dump-review-pack-demo.sh](../examples/voice-dump-review-pack-demo.sh)
 - [cross-repo-plan.txt](../examples/cross-repo-plan.txt)
 - [task-brief.md](../examples/task-brief.md)
 - [tasks.yaml](../examples/tasks.yaml)
