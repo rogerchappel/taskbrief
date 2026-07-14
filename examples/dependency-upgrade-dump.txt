@@ -1,0 +1,13 @@
+Repo: repoctx
+Task: upgrade the YAML parser dependency after the next patch release lands.
+Risk: medium because workspace parsing touches CLI output and downstream agent handoffs.
+Branch: chore/yaml-parser-upgrade
+Verify: npm run typecheck, npm test, npm run smoke.
+Stop if: lockfile changes include unrelated packages, workspace export output changes unexpectedly, or the release notes mention a breaking parser behavior.
+
+Repo: taskbrief
+Task: add a short migration note for maintainers who copy old workspace examples.
+Risk: low because this is docs-only.
+Branch: docs/workspace-migration-note
+Verify: npm run build and check the generated docs links manually.
+Stop if: the migration advice depends on unpublished CLI behavior.
