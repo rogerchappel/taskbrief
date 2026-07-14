@@ -107,6 +107,7 @@ bash examples/github-issue-triage-demo.sh
 bash examples/cross-repo-promo-demo.sh
 bash examples/stdin-promo-demo.sh
 bash examples/oncall-hotfix-demo.sh
+bash examples/dependency-upgrade-demo.sh
 ```
 
 The GitHub issue triage demo parses `examples/github-issue-triage.txt`, writes
@@ -135,6 +136,17 @@ bash examples/support-intake-demo.sh
 
 See [Support Intake Queue](docs/tutorials/support-intake-queue.md) and
 [Support Intake Social Hooks](docs/promo/support-intake-hooks.md).
+
+The dependency upgrade demo parses `examples/dependency-upgrade-dump.txt` into
+separate repo tasks with branch names, verification commands, and stop
+conditions:
+
+```bash
+bash examples/dependency-upgrade-demo.sh
+```
+
+See [Dependency Upgrade Queue](docs/tutorials/dependency-upgrade-queue.md) and
+[Dependency Upgrade Hooks](docs/promo/dependency-upgrade-hooks.md).
 
 To demonstrate the explicit LLM guardrail without using a real provider key:
 
