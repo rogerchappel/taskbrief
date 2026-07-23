@@ -1,0 +1,9 @@
+workspace: yaml-semantics
+repos:
+  api:
+    path: "/tmp/repo#one" # quoted hashes are path content
+    type: oss-cli
+    default_base: main
+    aliases: ["api,primary", short] # quoted commas stay in one alias
+    common_verification:
+      - "node -e \"console.log('# verified')\""
