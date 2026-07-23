@@ -35,6 +35,30 @@ describe("taskbrief CLI", () => {
     expect(output).toContain('type: "release"');
   });
 
+  it("accepts standards-compliant quoted YAML workspace values", async () => {
+    const output = await runCli([
+      "parse",
+      "tests/fixtures/cli/brain-dump.txt",
+      "--workspace",
+      "tests/fixtures/workspace-yaml-semantics/repos.yaml",
+      "--format",
+      "json",
+    ]);
+
+    expect(JSON.parse(output).workspace).toBe("yaml-semantics");
+  });
+
+  it("rejects malformed workspace YAML with a focused error", async () => {
+    await expect(
+      runCli([
+        "parse",
+        "tests/fixtures/cli/brain-dump.txt",
+        "--workspace",
+        "tests/fixtures/workspace-yaml-semantics/malformed.yaml",
+      ]),
+    ).rejects.toThrow(/Invalid workspace YAML:.*Missing closing "quote/u);
+  });
+
   it("reads stdin when parse has no file", async () => {
     const output = await runCli(["parse", "--format", "json", "--type", "transcript"], {
       stdin: "write a blog about task queues",

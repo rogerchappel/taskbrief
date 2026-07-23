@@ -6,6 +6,10 @@ import { resolveRepo } from "../../src/workspace/resolveRepo.js";
 
 describe("workspace config", () => {
   const fixture = readFileSync("tests/fixtures/workspace-risk/repos.yaml", "utf8");
+  const yamlSemanticsFixture = readFileSync(
+    "tests/fixtures/workspace-yaml-semantics/repos.yaml",
+    "utf8",
+  );
 
   it("loads PRD-shaped repo config", () => {
     const config = parseWorkspaceConfig(fixture);
@@ -36,5 +40,39 @@ describe("workspace config", () => {
 
     assert.equal(result.repoName, "unknown");
     assert.equal(result.uncertain, true);
+  });
+
+  it("preserves quoted YAML hashes, commas, and escapes", () => {
+    const config = parseWorkspaceConfig(yamlSemanticsFixture);
+
+    assert.equal(config.repos.api?.path, "/tmp/repo#one");
+    assert.deepEqual(config.repos.api?.aliases, ["api,primary", "short"]);
+    assert.deepEqual(config.repos.api?.common_verification, [
+      `node -e "console.log('# verified')"`,
+    ]);
+  });
+
+  it("retains JSON workspace config support", () => {
+    const config = parseWorkspaceConfig(
+      JSON.stringify({
+        workspace: "json-workspace",
+        repos: { api: { path: "/tmp/repo#one", aliases: ["api,primary"] } },
+      }),
+    );
+
+    assert.equal(config.workspace, "json-workspace");
+    assert.deepEqual(config.repos.api?.aliases, ["api,primary"]);
+  });
+
+  it("reports malformed YAML clearly", () => {
+    const malformed = readFileSync(
+      "tests/fixtures/workspace-yaml-semantics/malformed.yaml",
+      "utf8",
+    );
+
+    assert.throws(
+      () => parseWorkspaceConfig(malformed),
+      /Invalid workspace YAML:.*Missing closing "quote/u,
+    );
   });
 });

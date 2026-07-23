@@ -1,0 +1,4 @@
+workspace: yaml-semantics
+repos:
+  api:
+    path: "/tmp/repo
