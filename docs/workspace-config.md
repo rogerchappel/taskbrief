@@ -22,9 +22,10 @@ defaults:
     - secrets/**
 repos:
   branchbrief:
-    path: ~/Developer/my-opensource/branchbrief
+    path: "~/Developer/my-opensource/branchbrief#primary"
     type: oss-cli
     default_base: main
+    aliases: ["bb,cli", branchbrief-cli]
     common_verification:
       - npm ci
       - npm test
@@ -58,11 +59,17 @@ repos:
 | `path` | yes | Local path hint. May use `~`; `taskbrief` should not inspect repo contents by default. |
 | `type` | yes | Repo category, such as `oss-cli`, `docs-site`, `product`, or `community-oss`. |
 | `default_base` | yes | Default base branch for new task branches. |
+| `aliases` | no | Alternate repo names. Standard YAML quoting and flow-array syntax are supported. |
 | `docs_url` | no | Public docs URL, useful for docs tasks. |
 | `production_sensitive` | no | Mark product or production-adjacent repos for stronger gating. |
 | `common_verification` | no | Commands commonly used to verify changes in this repo. |
 | `forbidden_by_default` | no | Repo-specific forbidden paths. These add to top-level defaults. |
 | `risk_defaults` | no | Mapping of task type or keyword to `low`, `medium`, or `high`. |
+
+Workspace files use standard YAML syntax, including quoted `#` and comma
+characters, escape sequences, inline arrays, and comments. JSON workspace
+files remain supported. Invalid YAML or JSON is rejected before schema
+validation with a format-specific parse error.
 
 ## Safety Rules
 
