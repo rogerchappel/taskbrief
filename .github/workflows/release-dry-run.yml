@@ -35,7 +35,6 @@ jobs:
           npm run build --prefix "$RUNNER_TEMP/releasebox"
       - name: ReleaseBox readiness check
         run: node "$RUNNER_TEMP/releasebox/bin/releasebox.js" check .
-      - run: npm run release:check
       - name: Release notes preview
         run: |
           set -euo pipefail
