@@ -68,5 +68,8 @@
   "bugs": {
     "url": "https://github.com/rogerchappel/taskbrief/issues"
   },
-  "homepage": "https://github.com/rogerchappel/taskbrief#readme"
+  "homepage": "https://github.com/rogerchappel/taskbrief#readme",
+  "overrides": {
+    "esbuild": "^0.28.1"
+  }
 }
