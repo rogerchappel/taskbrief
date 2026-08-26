@@ -7,6 +7,11 @@ format and uses semantic versioning when versioned releases are published.
 
 ## [Unreleased]
 
+### Fixed
+
+- Reject `--output` paths that collide with generated orchestration artifacts
+  before writing any part of the output set.
+
 ### Added
 
 - Initial taskbrief product requirements.
