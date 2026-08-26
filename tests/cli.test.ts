@@ -135,6 +135,32 @@ describe("taskbrief CLI", () => {
     }
   });
 
+  it.each(["ORCHESTRATION.md", "orchestration.json"])(
+    "rejects orchestration output collision with %s before writing artifacts",
+    async (fileName) => {
+      const directory = await mkdtemp(join(tmpdir(), "taskbrief-cli-"));
+      const outputPath = join(directory, fileName);
+
+      try {
+        await expect(
+          runCli([
+            "parse",
+            "tests/fixtures/cli/brain-dump.txt",
+            "--output",
+            outputPath,
+            "--orchestration",
+          ]),
+        ).rejects.toThrow(/--output path conflicts with orchestration artifact/u);
+
+        await expect(access(outputPath)).rejects.toThrow();
+        await expect(access(join(directory, "ORCHESTRATION.md"))).rejects.toThrow();
+        await expect(access(join(directory, "orchestration.json"))).rejects.toThrow();
+      } finally {
+        await rm(directory, { recursive: true, force: true });
+      }
+    },
+  );
+
   it("creates a deterministic manual task brief", async () => {
     const output = await runCli([
       "new",
