@@ -253,6 +253,10 @@ When enabled, Taskbrief writes two handoff artifacts next to `--output`:
 - `ORCHESTRATION.md` for humans and orchestrator prompts
 - `orchestration.json` for tools
 
+The `--output` filename must be distinct from both artifact names. Taskbrief
+rejects either collision before writing any files, so an existing queue cannot
+be silently replaced by an orchestration artifact.
+
 ```bash
 taskbrief parse docs/PRD.md --output docs/TASKS.md --orchestration
 taskbrief parse messy-prd.md --llm --provider openai --output docs/TASKS.md --orchestration
