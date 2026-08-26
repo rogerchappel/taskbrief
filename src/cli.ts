@@ -2,7 +2,7 @@
 import { Command } from "commander";
 import { realpathSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { stdin as processStdin, stdout as processStdout } from "node:process";
 
@@ -94,6 +94,10 @@ export function createCli(io: CliIo = {}): Command {
       const orchestrationArtifacts = options.orchestration
         ? await buildOrchestrationArtifacts(queue, options, file)
         : undefined;
+
+      if (orchestrationArtifacts) {
+        validateOrchestrationOutputPath(options.output);
+      }
 
       await writeRenderedOutput(renderedOutput, options.output, stdout);
       if (orchestrationArtifacts) {
@@ -223,6 +227,23 @@ async function buildOrchestrationArtifacts(
     markdown: `${renderOrchestrationMarkdown(handoff)}\n`,
     json: `${JSON.stringify(handoff, null, 2)}\n`,
   };
+}
+
+function validateOrchestrationOutputPath(outputPath: string | undefined): void {
+  if (!outputPath) return;
+
+  const resolvedOutput = resolve(outputPath);
+  const outputDirectory = dirname(resolvedOutput);
+  const artifactPaths = [
+    resolve(outputDirectory, "ORCHESTRATION.md"),
+    resolve(outputDirectory, "orchestration.json"),
+  ];
+
+  if (artifactPaths.includes(resolvedOutput)) {
+    throw new Error(
+      `--output path conflicts with orchestration artifact: ${resolvedOutput}. Choose a distinct output filename.`,
+    );
+  }
 }
 
 async function writeOrchestrationArtifacts(
