@@ -7,7 +7,9 @@ export function splitTasks(input) {
     .replace(/\r\n?/g, "\n")
     .replace(/\b(?:also|then|next)\b/gi, BOUNDARY_MARKER)
     .replace(/;\s+/g, BOUNDARY_MARKER)
-    .replace(/\.\s+/g, BOUNDARY_MARKER)
+    .replace(/\.\s+/g, (separator, offset, source) =>
+      continuesWithDetailBlock(source.slice(offset + separator.length)) ? ".\n" : BOUNDARY_MARKER,
+    )
     .replace(/\s+(?:and|&)\s+(?=(?:product[- ]videogen|branchbrief|crewcmd|agentic[- ]oss[- ]template|agentic template|taskbrief|roger[- ]website|blog|docs?|deploy|set up|review|write)\b)/gi, BOUNDARY_MARKER)
     .replace(/,\s+(?=(?:product[- ]videogen|branchbrief|crewcmd|agentic[- ]oss[- ]template|agentic template|taskbrief|roger[- ]website|blog|deploy|set up|review|write)\b)/gi, BOUNDARY_MARKER);
 
@@ -18,6 +20,19 @@ export function splitTasks(input) {
     .filter(Boolean)
     .filter((task) => !/^(okay|ok|need to|we need to)$/i.test(task))
     .map((text) => ({ text, repo: inferRepo(text) }));
+}
+
+function continuesWithDetailBlock(remainder) {
+  const lines = remainder.split("\n");
+  const first = lines.findIndex((line) => line.trim());
+  if (first === -1) return false;
+
+  const firstLine = lines[first].trim();
+  if (/^(?:tasks?|details?|constraints?|verification|notes?):\s*$/i.test(firstLine)) {
+    return lines.slice(first + 1).some((line) => /^\s*(?:[-*]|\d+[.)])\s+/.test(line));
+  }
+
+  return /^(?:[-*]|\d+[.)])\s+/.test(firstLine);
 }
 
 function splitNumberedLines(chunk) {

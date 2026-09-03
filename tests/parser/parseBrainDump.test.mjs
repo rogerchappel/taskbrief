@@ -44,3 +44,15 @@ test("does not over-split simple single-repo work", () => {
   assert.equal(tasks.length, 1);
   assert.equal(tasks[0].repo, "branchbrief");
 });
+
+test("keeps labeled detail blocks with their prose objective", async () => {
+  const input = await readFile(new URL("../../examples/release-readiness-brain-dump.txt", import.meta.url), "utf8");
+  const queue = parseBrainDump(input);
+
+  assert.equal(queue.tasks.length, 2);
+  assert.deepEqual(queue.tasks.map((task) => task.type), ["release", "deploy"]);
+  assert.equal(queue.tasks[0].id, "branchbrief-prepare-branchbrief-for-npm-release");
+  assert.match(queue.tasks[0].context, /Tasks: - audit package metadata/);
+  assert.match(queue.tasks[0].context, /npm pack --dry-run/);
+  assert.equal(queue.tasks[1].id, "branchbrief-verify-branchbrief-docs-deploy");
+});
