@@ -108,6 +108,12 @@ bash examples/cross-repo-promo-demo.sh
 bash examples/stdin-promo-demo.sh
 bash examples/oncall-hotfix-demo.sh
 bash examples/dependency-upgrade-demo.sh
+bash examples/support-intake-demo.sh
+bash examples/llm-fail-closed-demo.sh
+bash examples/yaml-queue-demo.sh
+bash examples/release-review-pack-demo.sh
+bash examples/orchestration-demo.sh
+bash examples/voice-dump-review-pack-demo.sh
 ```
 
 The GitHub issue triage demo parses `examples/github-issue-triage.txt`, writes
@@ -185,8 +191,9 @@ npm test
 npm run release:check
 ```
 
-`release:check` runs the typecheck, tests, CLI smoke, package dry-run, and
-release-readiness validation that exercise the documented examples above.
+`release:check` runs the typecheck, tests, CLI smoke, every documented runnable
+demo in an isolated temporary directory, and the package dry-run. The demo gate
+also fails when a new `examples/*-demo.sh` is not listed in this README.
 
 stdin is supported when no input file is provided:
 
