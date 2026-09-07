@@ -34,8 +34,9 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "smoke": "npm run build && node dist/cli.js --help && node dist/cli.js --version && node dist/cli.js parse examples/voice-dump.txt --format json >/tmp/taskbrief-smoke.json && node -e \"const fs=require('node:fs'); const data=JSON.parse(fs.readFileSync('/tmp/taskbrief-smoke.json','utf8')); if (!Array.isArray(data.tasks) || data.tasks.length === 0) process.exit(1);\"",
+    "examples:verify": "bash scripts/verify-examples.sh",
     "package:smoke": "bash scripts/package-smoke.sh",
-    "release:check": "npm run typecheck && npm test && npm run smoke && npm run package:smoke"
+    "release:check": "npm run typecheck && npm test && npm run smoke && npm run examples:verify && npm run package:smoke"
   },
   "keywords": [
     "agents",
