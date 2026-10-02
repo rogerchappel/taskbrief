@@ -175,7 +175,7 @@ jobs:
               -o -name '*.template' \
             \) \
             -not -path 'templates/README.md' \
-            -not -path 'templates/*/README.md' \
+            -not -path '*/README.md' \
             -print |
             sort > "$generated_repository_file_list"
 
