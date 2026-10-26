@@ -68,9 +68,17 @@ function formatScalar(value, indent = 0) {
   if (typeof value === "number") return String(value);
   if (value === null) return "null";
   const string = String(value);
-  if (string.includes("\n")) {
+  // Literal blocks normalize CRLF and may discard whitespace-only lines.
+  if (
+    string.includes("\n") && !string.includes("\r") && string.trim() !== "" &&
+    !/(^|\n)[ \t]+(\n|$)/.test(string)
+  ) {
     const blockIndent = " ".repeat(indent + 2);
-    return `|\n${string.split("\n").map((line) => `${blockIndent}${line}`).join("\n")}`;
+    const endsWithNewline = string.endsWith("\n");
+    const content = endsWithNewline ? string.slice(0, -1) : string;
+    // The caller supplies the last line break; keep only those in the input.
+    const chomping = endsWithNewline ? "+" : "-";
+    return `|2${chomping}\n${content.split("\n").map((line) => `${blockIndent}${line}`).join("\n")}`;
   }
   return JSON.stringify(string);
 }

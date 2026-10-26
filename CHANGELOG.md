@@ -9,6 +9,8 @@ format and uses semantic versioning when versioned releases are published.
 
 ### Fixed
 
+- Preserve multiline string content, indentation, and trailing newlines in YAML
+  queue output, including CRLF text.
 - Reject `--output` paths that collide with generated orchestration artifacts
   before writing any part of the output set.
 

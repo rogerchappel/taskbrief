@@ -54,6 +54,34 @@ test("yaml queue output round-trips multiline fields", async () => {
   assert.deepEqual(parsed, expected);
 });
 
+test.each([
+  "first\nsecond",
+  "first\nsecond\n",
+  "first\nsecond\n\n",
+  "first\nsecond\n\n\n",
+  "\n",
+  "\n\n",
+  "\nleading blank line",
+  "  indented first line\nplain next line",
+  "first line\n  indented next line",
+  "first line\n\n  ",
+  " \n",
+  " \n  ",
+  " a\n ",
+  "first\n \nlast",
+  "\t\nlast\n",
+  "engineering notes: α\nnext step: β\n",
+  "first\r\nsecond\r\n",
+  "first\rsecond\nlast",
+])("yaml queue output preserves multiline string %j", (value) => {
+  const expected = {
+    context: value,
+    tasks: [{ context: value, agent_prompt: value, verification: [value] }],
+  };
+
+  assert.deepEqual(YAML.parse(renderYaml(expected)), expected);
+});
+
 test("parse output creates deterministic unique ids and branches for duplicates", () => {
   const queue = parseBrainDump("write docs for taskbrief and write docs for taskbrief", {
     workspace: "rogerchappel-oss",
